@@ -45,6 +45,38 @@ class FixedPeriodChartEditor extends LitElement {
     return this._config?.show_date_picker !== false; // Default true if not defined
   }
 
+  get _title() {
+    return this._config?.title || '';
+  }
+
+  get _color() {
+    return this._config?.color || '';
+  }
+
+  get _show_legend() {
+    return this._config?.show_legend !== false; // Default true
+  }
+
+  get _show_tooltip() {
+    return this._config?.show_tooltip !== false; // Default true
+  }
+
+  get _show_navigation() {
+    return this._config?.show_navigation === true; // Default false
+  }
+
+  get _period_entity() {
+    return this._config?.period_entity || '';
+  }
+
+  get _start_entity() {
+    return this._config?.start_entity || '';
+  }
+
+  get _end_entity() {
+    return this._config?.end_entity || '';
+  }
+
   render() {
     if (!this.hass || !this._config) {
       return html``;
@@ -85,19 +117,83 @@ class FixedPeriodChartEditor extends LitElement {
         </div>
 
         <div class="side-by-side">
-          <ha-select
-            label="Chart Type"
-            .value=${this._chart_type}
-            @closed=${(ev) => this._updateConfig('chart_type', ev.target.value)}
-          >
-            <mwc-list-item value="bar">Bar</mwc-list-item>
-            <mwc-list-item value="line">Line</mwc-list-item>
-          </ha-select>
+          <ha-textfield
+            label="Title (Optional)"
+            .value=${this._title}
+            @change=${(ev) => this._updateConfig('title', ev.target.value)}
+          ></ha-textfield>
+
+          <ha-textfield
+            label="Color (Hex or Name)"
+            .value=${this._color}
+            @change=${(ev) => this._updateConfig('color', ev.target.value)}
+          ></ha-textfield>
+        </div>
+
+        <div class="side-by-side">
+          <ha-entity-picker
+            .label=${"Period Entity (Optional)"}
+            .hass=${this.hass}
+            .value=${this._period_entity}
+            @value-changed=${(ev) => this._updateConfig('period_entity', ev.detail.value)}
+            allow-custom-entity
+          ></ha-entity-picker>
+        </div>
+
+        <div class="side-by-side">
+          <ha-entity-picker
+            .label=${"Start Entity (Optional)"}
+            .hass=${this.hass}
+            .value=${this._start_entity}
+            @value-changed=${(ev) => this._updateConfig('start_entity', ev.detail.value)}
+            allow-custom-entity
+          ></ha-entity-picker>
+
+          <ha-entity-picker
+            .label=${"End Entity (Optional)"}
+            .hass=${this.hass}
+            .value=${this._end_entity}
+            @value-changed=${(ev) => this._updateConfig('end_entity', ev.detail.value)}
+            allow-custom-entity
+          ></ha-entity-picker>
+        </div>
+
+        <div class="side-by-side">
+          <div>
+            <span class="label">Chart Type</span>
+            <select @change=${(ev) => this._updateConfig('chart_type', ev.target.value)}>
+              <option value="bar" ?selected=${this._chart_type === 'bar'}>Bar</option>
+              <option value="line" ?selected=${this._chart_type === 'line'}>Line</option>
+            </select>
+          </div>
 
           <ha-formfield .label=${"Show Date Picker"}>
             <ha-switch
               .checked=${this._show_date_picker !== false}
               @change=${(ev) => this._updateConfig('show_date_picker', ev.target.checked)}
+            ></ha-switch>
+          </ha-formfield>
+        </div>
+
+        <div class="side-by-side">
+          <ha-formfield .label=${"Show Legend"}>
+            <ha-switch
+              .checked=${this._show_legend !== false}
+              @change=${(ev) => this._updateConfig('show_legend', ev.target.checked)}
+            ></ha-switch>
+          </ha-formfield>
+
+          <ha-formfield .label=${"Show Tooltips"}>
+            <ha-switch
+              .checked=${this._show_tooltip !== false}
+              @change=${(ev) => this._updateConfig('show_tooltip', ev.target.checked)}
+            ></ha-switch>
+          </ha-formfield>
+
+          <ha-formfield .label=${"Show Navigation Arrows"}>
+            <ha-switch
+              .checked=${this._show_navigation === true}
+              @change=${(ev) => this._updateConfig('show_navigation', ev.target.checked)}
             ></ha-switch>
           </ha-formfield>
         </div>

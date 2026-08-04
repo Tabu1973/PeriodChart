@@ -9,6 +9,7 @@ class FixedPeriodChart extends LitElement {
       config: { type: Object },
       chartData: { type: Array },
       _isLoading: { type: Boolean, state: true },
+      _timeOffset: { type: Number, state: true },
     };
   }
 
@@ -18,6 +19,7 @@ class FixedPeriodChart extends LitElement {
     this.chartLabels = [];
     this.chart = null;
     this._isLoading = false;
+    this._timeOffset = 0;
   }
 
   setConfig(config) {
@@ -53,30 +55,34 @@ class FixedPeriodChart extends LitElement {
 
   async updateDatesAndFetch() {
     let start, end;
+    let period = this.config.period;
 
-    if (this.config.period) {
+    if (this.config.period_entity && this.hass.states[this.config.period_entity]) {
+      period = this.hass.states[this.config.period_entity].state;
+    }
+
+    if (period) {
       const now = new Date();
-      if (this.config.period === 'this_year') {
-        start = new Date(now.getFullYear(), 0, 1);
-        end = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
-      } else if (this.config.period === 'last_year') {
-        start = new Date(now.getFullYear() - 1, 0, 1);
-        end = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59);
-      } else if (this.config.period === 'this_month') {
-        start = new Date(now.getFullYear(), now.getMonth(), 1);
-        end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-      } else if (this.config.period === 'last_month') {
-        start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
-      } else if (this.config.period === 'today') {
-        start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+      if (period === 'this_year') {
+        start = new Date(now.getFullYear() + this._timeOffset, 0, 1);
+        end = new Date(now.getFullYear() + this._timeOffset, 11, 31, 23, 59, 59);
+      } else if (period === 'last_year') {
+        start = new Date(now.getFullYear() - 1 + this._timeOffset, 0, 1);
+        end = new Date(now.getFullYear() - 1 + this._timeOffset, 11, 31, 23, 59, 59);
+      } else if (period === 'this_month') {
+        start = new Date(now.getFullYear(), now.getMonth() + this._timeOffset, 1);
+        end = new Date(now.getFullYear(), now.getMonth() + 1 + this._timeOffset, 0, 23, 59, 59);
+      } else if (period === 'last_month') {
+        start = new Date(now.getFullYear(), now.getMonth() - 1 + this._timeOffset, 1);
+        end = new Date(now.getFullYear(), now.getMonth() + this._timeOffset, 0, 23, 59, 59);
+      } else if (period === 'today') {
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate() + this._timeOffset);
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + this._timeOffset, 23, 59, 59);
       }
     } else if (this.config.start_entity && this.config.end_entity) {
       const startState = this.hass.states[this.config.start_entity];
       const endState = this.hass.states[this.config.end_entity];
       if (startState && endState && startState.state !== 'unknown' && endState.state !== 'unknown') {
-        // e.g. input_datetime state "2026-05-01" or "2026-05-01 12:00:00"
         let sStr = startState.state.includes(' ') ? startState.state.replace(' ', 'T') : startState.state;
         let eStr = endState.state.includes(' ') ? endState.state.replace(' ', 'T') : endState.state;
         if (sStr.length === 10) sStr += 'T00:00:00';
@@ -154,10 +160,10 @@ class FixedPeriodChart extends LitElement {
         data: {
           labels: this.chartLabels,
           datasets: [{
-            label: this.config.title || this.config.entity,
+            label: this.config.entity,
             data: this.chartData,
-            backgroundColor: 'rgba(54, 162, 235, 0.5)',
-            borderColor: 'rgba(54, 162, 235, 1)',
+            backgroundColor: this.config.color || 'rgba(54, 162, 235, 0.5)',
+            borderColor: this.config.color || 'rgba(54, 162, 235, 1)',
             borderWidth: 1
           }]
         },
@@ -176,7 +182,11 @@ class FixedPeriodChart extends LitElement {
           },
           plugins: {
             legend: {
+              display: this.config.show_legend !== false,
               labels: { color: this.hass.themes.darkMode ? '#fff' : '#666' }
+            },
+            tooltip: {
+              enabled: this.config.show_tooltip !== false
             }
           }
         }
@@ -187,6 +197,13 @@ class FixedPeriodChart extends LitElement {
   render() {
     return html`
       <ha-card>
+        ${this.config.title || this.config.show_navigation ? html`
+          <div class="card-header-custom">
+            ${this.config.show_navigation ? html`<ha-icon-button .path=${"M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"} @click=${() => this.navigateTime(-1)}></ha-icon-button>` : ''}
+            <h1 class="card-title">${this.config.title || ''}</h1>
+            ${this.config.show_navigation ? html`<ha-icon-button .path=${"M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"} @click=${() => this.navigateTime(1)}></ha-icon-button>` : ''}
+          </div>
+        ` : ''}
         ${this.config.show_date_picker ? html`
           <div class="card-header-date">
             <input type="date" .value=${this._currentStart ? this._currentStart.toISOString().split('T')[0] : ''} @change=${e => this.handleDateChange(e, 'start')}>
@@ -205,6 +222,11 @@ class FixedPeriodChart extends LitElement {
     `;
   }
 
+  navigateTime(dir) {
+    this._timeOffset += dir;
+    this.updateDatesAndFetch();
+  }
+
   handleDateChange(e, type) {
     const val = e.target.value;
     if (!val) return;
@@ -214,13 +236,16 @@ class FixedPeriodChart extends LitElement {
     if (type === 'start') {
       this.config.start = `${val}T00:00:00`;
       delete this.config.start_entity;
+      delete this.config.period_entity;
       delete this.config.period;
     } else {
       this.config.end = `${val}T23:59:59`;
       delete this.config.end_entity;
+      delete this.config.period_entity;
       delete this.config.period;
     }
     
+    this._timeOffset = 0;
     this.requestUpdate('config');
   }
 
@@ -228,6 +253,20 @@ class FixedPeriodChart extends LitElement {
     return css`
       ha-card {
         padding: 16px;
+      }
+      .card-header-custom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 12px;
+      }
+      .card-title {
+        font-size: var(--ha-card-header-font-size, 24px);
+        margin: 0;
+        font-weight: 400;
+        color: var(--ha-card-header-color, --primary-text-color);
+        text-align: center;
+        flex-grow: 1;
       }
       .card-header-date {
         display: flex;
