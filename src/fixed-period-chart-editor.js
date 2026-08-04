@@ -365,14 +365,14 @@ class FixedPeriodChartEditor extends LitElement {
                      const r = parseInt(ev.target.value.slice(1, 3), 16);
                      const g = parseInt(ev.target.value.slice(3, 5), 16);
                      const b = parseInt(ev.target.value.slice(5, 7), 16);
-                     this._updateConfig(key, \`rgba(\${r}, \${g}, \${b}, \${parsed.opacity})\`);
+                     this._updateConfig(key, `rgba(${r}, ${g}, ${b}, ${parsed.opacity})`);
                    }}>
             <input type="range" min="0" max="1" step="0.05" .value=${parsed.opacity} style="flex: 1;"
                    @input=${(ev) => {
                      const r = parseInt(parsed.hex.slice(1, 3), 16);
                      const g = parseInt(parsed.hex.slice(3, 5), 16);
                      const b = parseInt(parsed.hex.slice(5, 7), 16);
-                     this._updateConfig(key, \`rgba(\${r}, \${g}, \${b}, \${ev.target.value})\`);
+                     this._updateConfig(key, `rgba(${r}, ${g}, ${b}, ${ev.target.value})`);
                    }}>
             <span style="font-size: 12px; color: var(--secondary-text-color); width: 36px; text-align: right;">${Math.round(parsed.opacity * 100)}%</span>
           </div>
