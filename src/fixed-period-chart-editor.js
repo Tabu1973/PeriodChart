@@ -57,6 +57,10 @@ class FixedPeriodChartEditor extends LitElement {
     return this._config?.bg_color || '';
   }
 
+  get _line_width() {
+    return this._config?.line_width || '';
+  }
+
   get _card_bg_color() {
     return this._config?.card_bg_color || '';
   }
@@ -221,16 +225,19 @@ class FixedPeriodChartEditor extends LitElement {
               <option value="line" ?selected=${this._chart_type === 'line'}>Line</option>
             </select>
           </div>
+          <div>
+            <span class="label">Line/Border Width (z.B. 2)</span>
+            <input type="number" class="styled-input" .value=${this._line_width} @input=${(ev) => this._updateConfig('line_width', ev.target.value)} placeholder="Auto">
+          </div>
+        </div>
 
+        <div class="side-by-side">
           <ha-formfield .label=${"Show Date Picker"}>
             <ha-switch
               .checked=${this._show_date_picker !== false}
               @change=${(ev) => this._updateConfig('show_date_picker', ev.target.checked)}
             ></ha-switch>
           </ha-formfield>
-        </div>
-
-        <div class="side-by-side">
           <ha-formfield .label=${"Show Legend"}>
             <ha-switch
               .checked=${this._show_legend !== false}
