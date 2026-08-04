@@ -173,30 +173,12 @@ class FixedPeriodChartEditor extends LitElement {
         </div>
 
         <div class="side-by-side">
-          <div>
-            <span class="label">Line/Border Color</span>
-            <div style="display: flex; gap: 8px;">
-              <input type="color" style="height: 46px; width: 46px; padding: 0; cursor: pointer; border: 1px solid var(--divider-color); border-radius: 4px;" .value=${/^#[0-9A-F]{6}$/i.test(this._color) ? this._color : '#03a9f4'} @input=${(ev) => this._updateConfig('color', ev.target.value)}>
-              <input type="text" class="styled-input" style="flex: 1;" .value=${this._color} @input=${(ev) => this._updateConfig('color', ev.target.value)} placeholder="e.g. #FF0000 or red">
-            </div>
-          </div>
-          <div>
-            <span class="label">Chart Fill Color</span>
-            <div style="display: flex; gap: 8px;">
-              <input type="color" style="height: 46px; width: 46px; padding: 0; cursor: pointer; border: 1px solid var(--divider-color); border-radius: 4px;" .value=${/^#[0-9A-F]{6}$/i.test(this._bg_color) ? this._bg_color : '#03a9f4'} @input=${(ev) => this._updateConfig('bg_color', ev.target.value)}>
-              <input type="text" class="styled-input" style="flex: 1;" .value=${this._bg_color} @input=${(ev) => this._updateConfig('bg_color', ev.target.value)} placeholder="e.g. rgba(255,0,0,0.2)">
-            </div>
-          </div>
+          ${this.renderColorPicker("Line/Border Color", "color")}
+          ${this.renderColorPicker("Chart Fill Color", "bg_color")}
         </div>
 
         <div class="side-by-side">
-          <div>
-            <span class="label">Card Background Color</span>
-            <div style="display: flex; gap: 8px;">
-              <input type="color" style="height: 46px; width: 46px; padding: 0; cursor: pointer; border: 1px solid var(--divider-color); border-radius: 4px;" .value=${/^#[0-9A-F]{6}$/i.test(this._card_bg_color) ? this._card_bg_color : '#ffffff'} @input=${(ev) => this._updateConfig('card_bg_color', ev.target.value)}>
-              <input type="text" class="styled-input" style="flex: 1;" .value=${this._card_bg_color} @input=${(ev) => this._updateConfig('card_bg_color', ev.target.value)} placeholder="e.g. transparent or rgba(...)">
-            </div>
-          </div>
+          ${this.renderColorPicker("Card Background Color", "card_bg_color")}
           <div></div>
         </div>
 
@@ -329,6 +311,72 @@ class FixedPeriodChartEditor extends LitElement {
             <span class="label">Step Size Y-Axis (z.B. 5)</span>
             <input type="number" class="styled-input" .value=${this._step_size_y} @input=${(ev) => this._updateConfig('step_size_y', ev.target.value)} placeholder="Auto">
           </div>
+        </div>
+      </div>
+    `;
+  }
+
+  _parseColor(colorStr) {
+    let hex = '#03a9f4';
+    let opacity = 1;
+    if (!colorStr) return { hex, opacity };
+
+    const str = colorStr.toLowerCase().trim();
+    if (str.startsWith('#')) {
+      hex = str.substring(0, 7);
+      if (str.length === 9) {
+        opacity = parseInt(str.substring(7, 9), 16) / 255;
+      }
+    } else if (str.startsWith('rgba(')) {
+      const parts = str.replace('rgba(', '').replace(')', '').split(',');
+      if (parts.length === 4) {
+        const r = parseInt(parts[0].trim());
+        const g = parseInt(parts[1].trim());
+        const b = parseInt(parts[2].trim());
+        opacity = parseFloat(parts[3].trim());
+        hex = '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+      }
+    } else if (str.startsWith('rgb(')) {
+      const parts = str.replace('rgb(', '').replace(')', '').split(',');
+      if (parts.length === 3) {
+        const r = parseInt(parts[0].trim());
+        const g = parseInt(parts[1].trim());
+        const b = parseInt(parts[2].trim());
+        hex = '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+      }
+    } else if (str === 'transparent') {
+      opacity = 0;
+    }
+    return { hex, opacity };
+  }
+
+  renderColorPicker(label, key) {
+    const colorVal = this[`_${key}`] || '';
+    const parsed = this._parseColor(colorVal);
+    
+    return html`
+      <div>
+        <span class="label">${label}</span>
+        <div style="display: flex; gap: 8px; flex-direction: column;">
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="color" style="height: 36px; width: 46px; padding: 0; cursor: pointer; border: 1px solid var(--divider-color); border-radius: 4px;" 
+                   .value=${parsed.hex} 
+                   @input=${(ev) => {
+                     const r = parseInt(ev.target.value.slice(1, 3), 16);
+                     const g = parseInt(ev.target.value.slice(3, 5), 16);
+                     const b = parseInt(ev.target.value.slice(5, 7), 16);
+                     this._updateConfig(key, \`rgba(\${r}, \${g}, \${b}, \${parsed.opacity})\`);
+                   }}>
+            <input type="range" min="0" max="1" step="0.05" .value=${parsed.opacity} style="flex: 1;"
+                   @input=${(ev) => {
+                     const r = parseInt(parsed.hex.slice(1, 3), 16);
+                     const g = parseInt(parsed.hex.slice(3, 5), 16);
+                     const b = parseInt(parsed.hex.slice(5, 7), 16);
+                     this._updateConfig(key, \`rgba(\${r}, \${g}, \${b}, \${ev.target.value})\`);
+                   }}>
+            <span style="font-size: 12px; color: var(--secondary-text-color); width: 36px; text-align: right;">${Math.round(parsed.opacity * 100)}%</span>
+          </div>
+          <input type="text" class="styled-input" .value=${colorVal} @input=${(ev) => this._updateConfig(key, ev.target.value)} placeholder="e.g. rgba(255,0,0,0.2)">
         </div>
       </div>
     `;
