@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import Chart from 'chart.js/auto';
+import './fixed-period-chart-editor.js';
 
 class FixedPeriodChart extends LitElement {
   static get properties() {
@@ -24,6 +25,20 @@ class FixedPeriodChart extends LitElement {
       throw new Error('You need to define an entity');
     }
     this.config = config;
+  }
+
+  static getConfigElement() {
+    return document.createElement('fixed-period-chart-editor');
+  }
+
+  static getStubConfig() {
+    return {
+      entity: '',
+      period: 'this_year',
+      resolution: 'day',
+      chart_type: 'bar',
+      show_date_picker: false
+    };
   }
 
   async updated(changedProperties) {
