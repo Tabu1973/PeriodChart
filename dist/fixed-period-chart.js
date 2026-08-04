@@ -188,6 +188,7 @@ function ht(t){return t+.5|0}rt?.({LitElement:at}),(ot.litElementVersions??=[]).
               @change=${t=>this._updateConfig("show_data_points",t.target.checked)}
             ></ha-switch>
           </ha-formfield>
+          <div></div>
         </div>
       </div>
     `:H``}_updateConfig(t,e){if(this._config&&this.hass&&this[`_${t}`]!==e){if(""===e||void 0===e){const e={...this._config};delete e[t],this._config=e}else this._config={...this._config,[t]:e};((t,e,i,s)=>{s=s||{},i=null==i?{}:i;const n=new Event(e,{bubbles:void 0===s.bubbles||s.bubbles,cancelable:Boolean(s.cancelable),composed:void 0===s.composed||s.composed});n.detail=i,t.dispatchEvent(n)})(this,"config-changed",{config:this._config})}}static get styles(){return o`

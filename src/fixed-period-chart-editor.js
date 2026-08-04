@@ -248,6 +248,7 @@ class FixedPeriodChartEditor extends LitElement {
               @change=${(ev) => this._updateConfig('show_data_points', ev.target.checked)}
             ></ha-switch>
           </ha-formfield>
+          <div></div>
         </div>
       </div>
     `;
