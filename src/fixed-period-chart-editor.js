@@ -57,6 +57,10 @@ class FixedPeriodChartEditor extends LitElement {
     return this._config?.bg_color || '';
   }
 
+  get _card_bg_color() {
+    return this._config?.card_bg_color || '';
+  }
+
   get _legend_label() {
     return this._config?.legend_label || '';
   }
@@ -177,12 +181,23 @@ class FixedPeriodChartEditor extends LitElement {
             </div>
           </div>
           <div>
-            <span class="label">Background/Fill Color</span>
+            <span class="label">Chart Fill Color</span>
             <div style="display: flex; gap: 8px;">
               <input type="color" style="height: 46px; width: 46px; padding: 0; cursor: pointer; border: 1px solid var(--divider-color); border-radius: 4px;" .value=${/^#[0-9A-F]{6}$/i.test(this._bg_color) ? this._bg_color : '#03a9f4'} @input=${(ev) => this._updateConfig('bg_color', ev.target.value)}>
               <input type="text" class="styled-input" style="flex: 1;" .value=${this._bg_color} @input=${(ev) => this._updateConfig('bg_color', ev.target.value)} placeholder="e.g. rgba(255,0,0,0.2)">
             </div>
           </div>
+        </div>
+
+        <div class="side-by-side">
+          <div>
+            <span class="label">Card Background Color</span>
+            <div style="display: flex; gap: 8px;">
+              <input type="color" style="height: 46px; width: 46px; padding: 0; cursor: pointer; border: 1px solid var(--divider-color); border-radius: 4px;" .value=${/^#[0-9A-F]{6}$/i.test(this._card_bg_color) ? this._card_bg_color : '#ffffff'} @input=${(ev) => this._updateConfig('card_bg_color', ev.target.value)}>
+              <input type="text" class="styled-input" style="flex: 1;" .value=${this._card_bg_color} @input=${(ev) => this._updateConfig('card_bg_color', ev.target.value)} placeholder="e.g. transparent or rgba(...)">
+            </div>
+          </div>
+          <div></div>
         </div>
 
         <div class="side-by-side">
