@@ -244,23 +244,24 @@ class FixedPeriodChartEditor extends LitElement {
               @change=${(ev) => this._updateConfig('show_legend', ev.target.checked)}
             ></ha-switch>
           </ha-formfield>
+        </div>
 
+        <div class="side-by-side">
           <ha-formfield .label=${"Show Tooltips"}>
             <ha-switch
               .checked=${this._show_tooltip !== false}
               @change=${(ev) => this._updateConfig('show_tooltip', ev.target.checked)}
             ></ha-switch>
           </ha-formfield>
-        </div>
-
-        <div class="side-by-side">
           <ha-formfield .label=${"Show Navigation Arrows"}>
             <ha-switch
               .checked=${this._show_navigation === true}
               @change=${(ev) => this._updateConfig('show_navigation', ev.target.checked)}
             ></ha-switch>
           </ha-formfield>
+        </div>
 
+        <div class="side-by-side">
           <ha-formfield .label=${"Smooth Lines"}>
             <ha-switch
               .checked=${this._smoothing === true}

@@ -152,23 +152,24 @@ function ht(t){return t+.5|0}rt?.({LitElement:at}),(ot.litElementVersions??=[]).
               @change=${t=>this._updateConfig("show_legend",t.target.checked)}
             ></ha-switch>
           </ha-formfield>
+        </div>
 
+        <div class="side-by-side">
           <ha-formfield .label=${"Show Tooltips"}>
             <ha-switch
               .checked=${!1!==this._show_tooltip}
               @change=${t=>this._updateConfig("show_tooltip",t.target.checked)}
             ></ha-switch>
           </ha-formfield>
-        </div>
-
-        <div class="side-by-side">
           <ha-formfield .label=${"Show Navigation Arrows"}>
             <ha-switch
               .checked=${!0===this._show_navigation}
               @change=${t=>this._updateConfig("show_navigation",t.target.checked)}
             ></ha-switch>
           </ha-formfield>
+        </div>
 
+        <div class="side-by-side">
           <ha-formfield .label=${"Smooth Lines"}>
             <ha-switch
               .checked=${!0===this._smoothing}
