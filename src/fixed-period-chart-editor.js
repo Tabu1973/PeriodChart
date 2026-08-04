@@ -93,27 +93,25 @@ class FixedPeriodChartEditor extends LitElement {
         ></ha-entity-picker>
 
         <div class="side-by-side">
-          <ha-select
-            label="Period"
-            .value=${this._period}
-            @closed=${(ev) => this._updateConfig('period', ev.target.value)}
-          >
-            <mwc-list-item value="this_year">This Year</mwc-list-item>
-            <mwc-list-item value="last_year">Last Year</mwc-list-item>
-            <mwc-list-item value="this_month">This Month</mwc-list-item>
-            <mwc-list-item value="last_month">Last Month</mwc-list-item>
-            <mwc-list-item value="today">Today</mwc-list-item>
-          </ha-select>
+          <div>
+            <span class="label">Period</span>
+            <select class="styled-select" @change=${(ev) => this._updateConfig('period', ev.target.value)}>
+              <option value="this_year" ?selected=${this._period === 'this_year'}>This Year</option>
+              <option value="last_year" ?selected=${this._period === 'last_year'}>Last Year</option>
+              <option value="this_month" ?selected=${this._period === 'this_month'}>This Month</option>
+              <option value="last_month" ?selected=${this._period === 'last_month'}>Last Month</option>
+              <option value="today" ?selected=${this._period === 'today'}>Today</option>
+            </select>
+          </div>
 
-          <ha-select
-            label="Resolution"
-            .value=${this._resolution}
-            @closed=${(ev) => this._updateConfig('resolution', ev.target.value)}
-          >
-            <mwc-list-item value="day">Day</mwc-list-item>
-            <mwc-list-item value="hour">Hour</mwc-list-item>
-            <mwc-list-item value="5minute">5 Minute</mwc-list-item>
-          </ha-select>
+          <div>
+            <span class="label">Resolution</span>
+            <select class="styled-select" @change=${(ev) => this._updateConfig('resolution', ev.target.value)}>
+              <option value="day" ?selected=${this._resolution === 'day'}>Day</option>
+              <option value="hour" ?selected=${this._resolution === 'hour'}>Hour</option>
+              <option value="5minute" ?selected=${this._resolution === '5minute'}>5 Minute</option>
+            </select>
+          </div>
         </div>
 
         <div class="side-by-side">
@@ -161,7 +159,7 @@ class FixedPeriodChartEditor extends LitElement {
         <div class="side-by-side">
           <div>
             <span class="label">Chart Type</span>
-            <select @change=${(ev) => this._updateConfig('chart_type', ev.target.value)}>
+            <select class="styled-select" @change=${(ev) => this._updateConfig('chart_type', ev.target.value)}>
               <option value="bar" ?selected=${this._chart_type === 'bar'}>Bar</option>
               <option value="line" ?selected=${this._chart_type === 'line'}>Line</option>
             </select>
@@ -242,6 +240,40 @@ class FixedPeriodChartEditor extends LitElement {
       }
       .side-by-side > * {
         flex: 1;
+      }
+      .label {
+        display: block;
+        color: var(--secondary-text-color);
+        font-size: 12px;
+        margin-bottom: 8px;
+      }
+      .styled-select {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 4px;
+        border: 1px solid var(--divider-color, #e0e0e0);
+        background-color: var(--card-background-color, #fff);
+        color: var(--primary-text-color, #212121);
+        font-size: 16px;
+        font-family: var(--paper-font-body1_-_font-family, 'Roboto', 'Noto', sans-serif);
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22%23757575%22%20d%3D%22M7%2010l5%205%205-5z%22%2F%3E%3C%2Fsvg%3E");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        background-size: 24px;
+        transition: border-color 0.15s ease-in-out;
+        cursor: pointer;
+      }
+      .styled-select:focus {
+        outline: none;
+        border-color: var(--primary-color, #03a9f4);
+        border-width: 2px;
+        padding: 11px 15px; /* adjust for 2px border */
+      }
+      .styled-select:hover {
+        background-color: rgba(var(--rgb-primary-text-color), 0.04);
       }
     `;
   }
