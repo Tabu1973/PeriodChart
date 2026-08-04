@@ -61,38 +61,35 @@ class FixedPeriodChartEditor extends LitElement {
         ></ha-entity-picker>
 
         <div class="side-by-side">
-          <ha-select
-            label="Period"
-            .value=${this._period}
-            @closed=${(ev) => this._updateConfig('period', ev.target.value)}
-          >
-            <mwc-list-item value="this_year">This Year</mwc-list-item>
-            <mwc-list-item value="last_year">Last Year</mwc-list-item>
-            <mwc-list-item value="this_month">This Month</mwc-list-item>
-            <mwc-list-item value="last_month">Last Month</mwc-list-item>
-            <mwc-list-item value="today">Today</mwc-list-item>
-          </ha-select>
+          <div>
+            <span class="label">Period</span>
+            <select @change=${(ev) => this._updateConfig('period', ev.target.value)}>
+              <option value="this_year" ?selected=${this._period === 'this_year'}>This Year</option>
+              <option value="last_year" ?selected=${this._period === 'last_year'}>Last Year</option>
+              <option value="this_month" ?selected=${this._period === 'this_month'}>This Month</option>
+              <option value="last_month" ?selected=${this._period === 'last_month'}>Last Month</option>
+              <option value="today" ?selected=${this._period === 'today'}>Today</option>
+            </select>
+          </div>
 
-          <ha-select
-            label="Resolution"
-            .value=${this._resolution}
-            @closed=${(ev) => this._updateConfig('resolution', ev.target.value)}
-          >
-            <mwc-list-item value="day">Day</mwc-list-item>
-            <mwc-list-item value="hour">Hour</mwc-list-item>
-            <mwc-list-item value="5minute">5 Minute</mwc-list-item>
-          </ha-select>
+          <div>
+            <span class="label">Resolution</span>
+            <select @change=${(ev) => this._updateConfig('resolution', ev.target.value)}>
+              <option value="day" ?selected=${this._resolution === 'day'}>Day</option>
+              <option value="hour" ?selected=${this._resolution === 'hour'}>Hour</option>
+              <option value="5minute" ?selected=${this._resolution === '5minute'}>5 Minute</option>
+            </select>
+          </div>
         </div>
 
         <div class="side-by-side">
-          <ha-select
-            label="Chart Type"
-            .value=${this._chart_type}
-            @closed=${(ev) => this._updateConfig('chart_type', ev.target.value)}
-          >
-            <mwc-list-item value="bar">Bar</mwc-list-item>
-            <mwc-list-item value="line">Line</mwc-list-item>
-          </ha-select>
+          <div>
+            <span class="label">Chart Type</span>
+            <select @change=${(ev) => this._updateConfig('chart_type', ev.target.value)}>
+              <option value="bar" ?selected=${this._chart_type === 'bar'}>Bar</option>
+              <option value="line" ?selected=${this._chart_type === 'line'}>Line</option>
+            </select>
+          </div>
 
           <ha-formfield .label=${"Show Date Picker"}>
             <ha-switch
@@ -146,6 +143,26 @@ class FixedPeriodChartEditor extends LitElement {
       }
       .side-by-side > * {
         flex: 1;
+      }
+      select {
+        width: 100%;
+        padding: 10px;
+        border-radius: 4px;
+        border: 1px solid var(--divider-color, #ccc);
+        background-color: var(--card-background-color, #fff);
+        color: var(--primary-text-color, #000);
+        font-size: 16px;
+        font-family: inherit;
+        outline: none;
+      }
+      select:focus {
+        border-color: var(--primary-color, #03a9f4);
+      }
+      .label {
+        font-size: 12px;
+        color: var(--secondary-text-color, #888);
+        margin-bottom: 4px;
+        display: block;
       }
     `;
   }
