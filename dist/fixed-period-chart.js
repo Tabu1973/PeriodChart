@@ -230,12 +230,12 @@ function ht(t){return t+.5|0}rt?.({LitElement:at}),(ot.litElementVersions??=[]).
         <span class="label">${t}</span>
         <div style="display: flex; gap: 8px; flex-direction: column;">
           <div style="display: flex; gap: 8px; align-items: center;">
-            <input type="color" style="height: 36px; width: 46px; padding: 0; cursor: pointer; border: 1px solid var(--divider-color); border-radius: 4px;" 
+            <input type="color" style="height: 36px; width: 46px; padding: 0; cursor: pointer; border: 1px solid var(--divider-color); border-radius: 4px; flex-shrink: 0;" 
                    .value=${s.hex} 
                    @input=${t=>{const i=parseInt(t.target.value.slice(1,3),16),n=parseInt(t.target.value.slice(3,5),16),o=parseInt(t.target.value.slice(5,7),16);this._updateConfig(e,`rgba(${i}, ${n}, ${o}, ${s.opacity})`)}}>
-            <input type="range" min="0" max="1" step="0.05" .value=${s.opacity} style="flex: 1;"
+            <input type="range" min="0" max="1" step="0.01" .value=${s.opacity} style="flex: 1; min-width: 60px;"
                    @input=${t=>{const i=parseInt(s.hex.slice(1,3),16),n=parseInt(s.hex.slice(3,5),16),o=parseInt(s.hex.slice(5,7),16);this._updateConfig(e,`rgba(${i}, ${n}, ${o}, ${t.target.value})`)}}>
-            <span style="font-size: 12px; color: var(--secondary-text-color); width: 36px; text-align: right;">${Math.round(100*s.opacity)}%</span>
+            <span style="font-size: 12px; color: var(--secondary-text-color); width: 36px; text-align: right; flex-shrink: 0;">${Math.round(100*s.opacity)}%</span>
           </div>
           <input type="text" class="styled-input" .value=${i} @input=${t=>this._updateConfig(e,t.target.value)} placeholder="e.g. rgba(255,0,0,0.2)">
         </div>

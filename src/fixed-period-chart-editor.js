@@ -359,7 +359,7 @@ class FixedPeriodChartEditor extends LitElement {
         <span class="label">${label}</span>
         <div style="display: flex; gap: 8px; flex-direction: column;">
           <div style="display: flex; gap: 8px; align-items: center;">
-            <input type="color" style="height: 36px; width: 46px; padding: 0; cursor: pointer; border: 1px solid var(--divider-color); border-radius: 4px;" 
+            <input type="color" style="height: 36px; width: 46px; padding: 0; cursor: pointer; border: 1px solid var(--divider-color); border-radius: 4px; flex-shrink: 0;" 
                    .value=${parsed.hex} 
                    @input=${(ev) => {
                      const r = parseInt(ev.target.value.slice(1, 3), 16);
@@ -367,14 +367,14 @@ class FixedPeriodChartEditor extends LitElement {
                      const b = parseInt(ev.target.value.slice(5, 7), 16);
                      this._updateConfig(key, `rgba(${r}, ${g}, ${b}, ${parsed.opacity})`);
                    }}>
-            <input type="range" min="0" max="1" step="0.05" .value=${parsed.opacity} style="flex: 1;"
+            <input type="range" min="0" max="1" step="0.01" .value=${parsed.opacity} style="flex: 1; min-width: 60px;"
                    @input=${(ev) => {
                      const r = parseInt(parsed.hex.slice(1, 3), 16);
                      const g = parseInt(parsed.hex.slice(3, 5), 16);
                      const b = parseInt(parsed.hex.slice(5, 7), 16);
                      this._updateConfig(key, `rgba(${r}, ${g}, ${b}, ${ev.target.value})`);
                    }}>
-            <span style="font-size: 12px; color: var(--secondary-text-color); width: 36px; text-align: right;">${Math.round(parsed.opacity * 100)}%</span>
+            <span style="font-size: 12px; color: var(--secondary-text-color); width: 36px; text-align: right; flex-shrink: 0;">${Math.round(parsed.opacity * 100)}%</span>
           </div>
           <input type="text" class="styled-input" .value=${colorVal} @input=${(ev) => this._updateConfig(key, ev.target.value)} placeholder="e.g. rgba(255,0,0,0.2)">
         </div>
