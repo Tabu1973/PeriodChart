@@ -56,17 +56,15 @@ class FixedPeriodChartEditor extends LitElement {
           .label=${"Entity (Sensor)"}
           .hass=${this.hass}
           .value=${this._entity}
-          .configValue=${"entity"}
-          @value-changed=${this._valueChanged}
+          @value-changed=${(ev) => this._updateConfig('entity', ev.detail.value)}
           allow-custom-entity
         ></ha-entity-picker>
 
         <div class="side-by-side">
           <ha-select
             label="Period"
-            .configValue=${"period"}
             .value=${this._period}
-            @closed=${this._valueChanged}
+            @closed=${(ev) => this._updateConfig('period', ev.target.value)}
           >
             <mwc-list-item value="this_year">This Year</mwc-list-item>
             <mwc-list-item value="last_year">Last Year</mwc-list-item>
@@ -77,9 +75,8 @@ class FixedPeriodChartEditor extends LitElement {
 
           <ha-select
             label="Resolution"
-            .configValue=${"resolution"}
             .value=${this._resolution}
-            @closed=${this._valueChanged}
+            @closed=${(ev) => this._updateConfig('resolution', ev.target.value)}
           >
             <mwc-list-item value="day">Day</mwc-list-item>
             <mwc-list-item value="hour">Hour</mwc-list-item>
@@ -90,9 +87,8 @@ class FixedPeriodChartEditor extends LitElement {
         <div class="side-by-side">
           <ha-select
             label="Chart Type"
-            .configValue=${"chart_type"}
             .value=${this._chart_type}
-            @closed=${this._valueChanged}
+            @closed=${(ev) => this._updateConfig('chart_type', ev.target.value)}
           >
             <mwc-list-item value="bar">Bar</mwc-list-item>
             <mwc-list-item value="line">Line</mwc-list-item>
@@ -101,8 +97,7 @@ class FixedPeriodChartEditor extends LitElement {
           <ha-formfield .label=${"Show Date Picker"}>
             <ha-switch
               .checked=${this._show_date_picker !== false}
-              .configValue=${"show_date_picker"}
-              @change=${this._valueChanged}
+              @change=${(ev) => this._updateConfig('show_date_picker', ev.target.checked)}
             ></ha-switch>
           </ha-formfield>
         </div>
@@ -110,31 +105,25 @@ class FixedPeriodChartEditor extends LitElement {
     `;
   }
 
-  _valueChanged(ev) {
+  _updateConfig(key, value) {
     if (!this._config || !this.hass) {
       return;
     }
-    const target = ev.target;
-    if (this[`_${target.configValue}`] === target.value) {
+    
+    // For properties that start with underscore
+    if (this[`_${key}`] === value) {
       return;
     }
-    
-    let newValue = target.value;
-    if (target.configValue === 'show_date_picker') {
-      newValue = target.checked;
-    }
 
-    if (target.configValue) {
-      if (newValue === '') {
-        const tmpConfig = { ...this._config };
-        delete tmpConfig[target.configValue];
-        this._config = tmpConfig;
-      } else {
-        this._config = {
-          ...this._config,
-          [target.configValue]: newValue
-        };
-      }
+    if (value === '' || value === undefined) {
+      const tmpConfig = { ...this._config };
+      delete tmpConfig[key];
+      this._config = tmpConfig;
+    } else {
+      this._config = {
+        ...this._config,
+        [key]: value
+      };
     }
     
     fireEvent(this, 'config-changed', { config: this._config });

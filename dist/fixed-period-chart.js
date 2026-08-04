@@ -44,17 +44,15 @@ function ht(t){return t+.5|0}rt?.({LitElement:at}),(ot.litElementVersions??=[]).
           .label=${"Entity (Sensor)"}
           .hass=${this.hass}
           .value=${this._entity}
-          .configValue=${"entity"}
-          @value-changed=${this._valueChanged}
+          @value-changed=${t=>this._updateConfig("entity",t.detail.value)}
           allow-custom-entity
         ></ha-entity-picker>
 
         <div class="side-by-side">
           <ha-select
             label="Period"
-            .configValue=${"period"}
             .value=${this._period}
-            @closed=${this._valueChanged}
+            @closed=${t=>this._updateConfig("period",t.target.value)}
           >
             <mwc-list-item value="this_year">This Year</mwc-list-item>
             <mwc-list-item value="last_year">Last Year</mwc-list-item>
@@ -65,9 +63,8 @@ function ht(t){return t+.5|0}rt?.({LitElement:at}),(ot.litElementVersions??=[]).
 
           <ha-select
             label="Resolution"
-            .configValue=${"resolution"}
             .value=${this._resolution}
-            @closed=${this._valueChanged}
+            @closed=${t=>this._updateConfig("resolution",t.target.value)}
           >
             <mwc-list-item value="day">Day</mwc-list-item>
             <mwc-list-item value="hour">Hour</mwc-list-item>
@@ -78,9 +75,8 @@ function ht(t){return t+.5|0}rt?.({LitElement:at}),(ot.litElementVersions??=[]).
         <div class="side-by-side">
           <ha-select
             label="Chart Type"
-            .configValue=${"chart_type"}
             .value=${this._chart_type}
-            @closed=${this._valueChanged}
+            @closed=${t=>this._updateConfig("chart_type",t.target.value)}
           >
             <mwc-list-item value="bar">Bar</mwc-list-item>
             <mwc-list-item value="line">Line</mwc-list-item>
@@ -89,13 +85,12 @@ function ht(t){return t+.5|0}rt?.({LitElement:at}),(ot.litElementVersions??=[]).
           <ha-formfield .label=${"Show Date Picker"}>
             <ha-switch
               .checked=${!1!==this._show_date_picker}
-              .configValue=${"show_date_picker"}
-              @change=${this._valueChanged}
+              @change=${t=>this._updateConfig("show_date_picker",t.target.checked)}
             ></ha-switch>
           </ha-formfield>
         </div>
       </div>
-    `:H``}_valueChanged(t){if(!this._config||!this.hass)return;const e=t.target;if(this[`_${e.configValue}`]===e.value)return;let i=e.value;if("show_date_picker"===e.configValue&&(i=e.checked),e.configValue)if(""===i){const t={...this._config};delete t[e.configValue],this._config=t}else this._config={...this._config,[e.configValue]:i};((t,e,i,s)=>{s=s||{},i=null==i?{}:i;const n=new Event(e,{bubbles:void 0===s.bubbles||s.bubbles,cancelable:Boolean(s.cancelable),composed:void 0===s.composed||s.composed});n.detail=i,t.dispatchEvent(n)})(this,"config-changed",{config:this._config})}static get styles(){return o`
+    `:H``}_updateConfig(t,e){if(this._config&&this.hass&&this[`_${t}`]!==e){if(""===e||void 0===e){const e={...this._config};delete e[t],this._config=e}else this._config={...this._config,[t]:e};((t,e,i,s)=>{s=s||{},i=null==i?{}:i;const n=new Event(e,{bubbles:void 0===s.bubbles||s.bubbles,cancelable:Boolean(s.cancelable),composed:void 0===s.composed||s.composed});n.detail=i,t.dispatchEvent(n)})(this,"config-changed",{config:this._config})}}static get styles(){return o`
       .card-config {
         display: flex;
         flex-direction: column;
