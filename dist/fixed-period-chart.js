@@ -89,6 +89,7 @@ function ht(t){return t+.5|0}rt?.({LitElement:at}),(ot.litElementVersions??=[]).
             .label=${"Period Entity (Optional)"}
             .hass=${this.hass}
             .value=${this._period_entity}
+            .includeDomains=${["input_select"]}
             @value-changed=${t=>this._updateConfig("period_entity",t.detail.value)}
             allow-custom-entity
           ></ha-entity-picker>
@@ -99,6 +100,7 @@ function ht(t){return t+.5|0}rt?.({LitElement:at}),(ot.litElementVersions??=[]).
             .label=${"Start Entity (Optional)"}
             .hass=${this.hass}
             .value=${this._start_entity}
+            .includeDomains=${["input_datetime"]}
             @value-changed=${t=>this._updateConfig("start_entity",t.detail.value)}
             allow-custom-entity
           ></ha-entity-picker>
@@ -107,6 +109,7 @@ function ht(t){return t+.5|0}rt?.({LitElement:at}),(ot.litElementVersions??=[]).
             .label=${"End Entity (Optional)"}
             .hass=${this.hass}
             .value=${this._end_entity}
+            .includeDomains=${["input_datetime"]}
             @value-changed=${t=>this._updateConfig("end_entity",t.detail.value)}
             allow-custom-entity
           ></ha-entity-picker>

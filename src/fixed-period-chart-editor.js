@@ -133,6 +133,7 @@ class FixedPeriodChartEditor extends LitElement {
             .label=${"Period Entity (Optional)"}
             .hass=${this.hass}
             .value=${this._period_entity}
+            .includeDomains=${['input_select']}
             @value-changed=${(ev) => this._updateConfig('period_entity', ev.detail.value)}
             allow-custom-entity
           ></ha-entity-picker>
@@ -143,6 +144,7 @@ class FixedPeriodChartEditor extends LitElement {
             .label=${"Start Entity (Optional)"}
             .hass=${this.hass}
             .value=${this._start_entity}
+            .includeDomains=${['input_datetime']}
             @value-changed=${(ev) => this._updateConfig('start_entity', ev.detail.value)}
             allow-custom-entity
           ></ha-entity-picker>
@@ -151,6 +153,7 @@ class FixedPeriodChartEditor extends LitElement {
             .label=${"End Entity (Optional)"}
             .hass=${this.hass}
             .value=${this._end_entity}
+            .includeDomains=${['input_datetime']}
             @value-changed=${(ev) => this._updateConfig('end_entity', ev.detail.value)}
             allow-custom-entity
           ></ha-entity-picker>
