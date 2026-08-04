@@ -65,6 +65,10 @@ class FixedPeriodChartEditor extends LitElement {
     return this._config?.smoothing === true; // Default false
   }
 
+  get _show_data_points() {
+    return this._config?.show_data_points !== false; // Default true
+  }
+
   get _show_legend() {
     return this._config?.show_legend !== false; // Default true
   }
@@ -233,6 +237,15 @@ class FixedPeriodChartEditor extends LitElement {
             <ha-switch
               .checked=${this._smoothing === true}
               @change=${(ev) => this._updateConfig('smoothing', ev.target.checked)}
+            ></ha-switch>
+          </ha-formfield>
+        </div>
+
+        <div class="side-by-side">
+          <ha-formfield .label=${"Show Data Points (Line Chart)"}>
+            <ha-switch
+              .checked=${this._show_data_points !== false}
+              @change=${(ev) => this._updateConfig('show_data_points', ev.target.checked)}
             ></ha-switch>
           </ha-formfield>
         </div>

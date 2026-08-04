@@ -183,7 +183,9 @@ class FixedPeriodChart extends LitElement {
           borderColor: this.config.color || 'rgba(54, 162, 235, 1)',
           borderWidth: 1,
           tension: this.config.smoothing ? 0.4 : 0,
-          fill: !!this.config.bg_color // Fill if background color is set, useful for line charts
+          fill: !!this.config.bg_color, // Fill if background color is set, useful for line charts
+          pointRadius: this.config.show_data_points === false ? 0 : 3,
+          pointHoverRadius: this.config.show_data_points === false ? 5 : 4
         }]
       },
       options: {
