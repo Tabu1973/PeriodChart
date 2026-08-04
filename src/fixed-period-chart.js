@@ -150,6 +150,13 @@ class FixedPeriodChart extends LitElement {
       chartContainer.appendChild(canvas);
     }
 
+    // If the canvas element changed (e.g., destroyed and recreated by LitElement during loading state),
+    // we must destroy the old Chart.js instance because it still points to the detached canvas.
+    if (this.chart && this.chart.canvas !== canvas) {
+      this.chart.destroy();
+      this.chart = null;
+    }
+
     if (this.chart) {
       this.chart.data.labels = this.chartLabels;
       this.chart.data.datasets[0].data = this.chartData;
