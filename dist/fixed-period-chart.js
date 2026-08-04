@@ -49,35 +49,38 @@ function ht(t){return t+.5|0}rt?.({LitElement:at}),(ot.litElementVersions??=[]).
         ></ha-entity-picker>
 
         <div class="side-by-side">
-          <div>
-            <span class="label">Period</span>
-            <select @change=${t=>this._updateConfig("period",t.target.value)}>
-              <option value="this_year" ?selected=${"this_year"===this._period}>This Year</option>
-              <option value="last_year" ?selected=${"last_year"===this._period}>Last Year</option>
-              <option value="this_month" ?selected=${"this_month"===this._period}>This Month</option>
-              <option value="last_month" ?selected=${"last_month"===this._period}>Last Month</option>
-              <option value="today" ?selected=${"today"===this._period}>Today</option>
-            </select>
-          </div>
+          <ha-select
+            label="Period"
+            .value=${this._period}
+            @closed=${t=>this._updateConfig("period",t.target.value)}
+          >
+            <mwc-list-item value="this_year">This Year</mwc-list-item>
+            <mwc-list-item value="last_year">Last Year</mwc-list-item>
+            <mwc-list-item value="this_month">This Month</mwc-list-item>
+            <mwc-list-item value="last_month">Last Month</mwc-list-item>
+            <mwc-list-item value="today">Today</mwc-list-item>
+          </ha-select>
 
-          <div>
-            <span class="label">Resolution</span>
-            <select @change=${t=>this._updateConfig("resolution",t.target.value)}>
-              <option value="day" ?selected=${"day"===this._resolution}>Day</option>
-              <option value="hour" ?selected=${"hour"===this._resolution}>Hour</option>
-              <option value="5minute" ?selected=${"5minute"===this._resolution}>5 Minute</option>
-            </select>
-          </div>
+          <ha-select
+            label="Resolution"
+            .value=${this._resolution}
+            @closed=${t=>this._updateConfig("resolution",t.target.value)}
+          >
+            <mwc-list-item value="day">Day</mwc-list-item>
+            <mwc-list-item value="hour">Hour</mwc-list-item>
+            <mwc-list-item value="5minute">5 Minute</mwc-list-item>
+          </ha-select>
         </div>
 
         <div class="side-by-side">
-          <div>
-            <span class="label">Chart Type</span>
-            <select @change=${t=>this._updateConfig("chart_type",t.target.value)}>
-              <option value="bar" ?selected=${"bar"===this._chart_type}>Bar</option>
-              <option value="line" ?selected=${"line"===this._chart_type}>Line</option>
-            </select>
-          </div>
+          <ha-select
+            label="Chart Type"
+            .value=${this._chart_type}
+            @closed=${t=>this._updateConfig("chart_type",t.target.value)}
+          >
+            <mwc-list-item value="bar">Bar</mwc-list-item>
+            <mwc-list-item value="line">Line</mwc-list-item>
+          </ha-select>
 
           <ha-formfield .label=${"Show Date Picker"}>
             <ha-switch
@@ -103,26 +106,6 @@ function ht(t){return t+.5|0}rt?.({LitElement:at}),(ot.litElementVersions??=[]).
       }
       .side-by-side > * {
         flex: 1;
-      }
-      select {
-        width: 100%;
-        padding: 10px;
-        border-radius: 4px;
-        border: 1px solid var(--divider-color, #ccc);
-        background-color: var(--card-background-color, #fff);
-        color: var(--primary-text-color, #000);
-        font-size: 16px;
-        font-family: inherit;
-        outline: none;
-      }
-      select:focus {
-        border-color: var(--primary-color, #03a9f4);
-      }
-      .label {
-        font-size: 12px;
-        color: var(--secondary-text-color, #888);
-        margin-bottom: 4px;
-        display: block;
       }
     `}});customElements.define("fixed-period-chart",class extends at{static get properties(){return{hass:{type:Object},config:{type:Object},chartData:{type:Array},_isLoading:{type:Boolean,state:!0}}}constructor(){super(),this.chartData=[],this.chartLabels=[],this.chart=null,this._isLoading=!1}setConfig(t){if(!t.entity)throw new Error("You need to define an entity");this.config=t}static getConfigElement(){return document.createElement("fixed-period-chart-editor")}static getStubConfig(){return{entity:"",period:"this_year",resolution:"day",chart_type:"bar",show_date_picker:!1}}async updated(t){super.updated(t),(t.has("hass")||t.has("config"))&&this.hass&&this.config&&await this.updateDatesAndFetch()}async updateDatesAndFetch(){let t,e;if(this.config.period){const i=new Date;"this_year"===this.config.period?(t=new Date(i.getFullYear(),0,1),e=new Date(i.getFullYear(),11,31,23,59,59)):"last_year"===this.config.period?(t=new Date(i.getFullYear()-1,0,1),e=new Date(i.getFullYear()-1,11,31,23,59,59)):"this_month"===this.config.period?(t=new Date(i.getFullYear(),i.getMonth(),1),e=new Date(i.getFullYear(),i.getMonth()+1,0,23,59,59)):"last_month"===this.config.period?(t=new Date(i.getFullYear(),i.getMonth()-1,1),e=new Date(i.getFullYear(),i.getMonth(),0,23,59,59)):"today"===this.config.period&&(t=new Date(i.getFullYear(),i.getMonth(),i.getDate()),e=new Date(i.getFullYear(),i.getMonth(),i.getDate(),23,59,59))}else if(this.config.start_entity&&this.config.end_entity){const i=this.hass.states[this.config.start_entity],s=this.hass.states[this.config.end_entity];if(i&&s&&"unknown"!==i.state&&"unknown"!==s.state){let n=i.state.includes(" ")?i.state.replace(" ","T"):i.state,o=s.state.includes(" ")?s.state.replace(" ","T"):s.state;10===n.length&&(n+="T00:00:00"),10===o.length&&(o+="T23:59:59"),t=new Date(n),e=new Date(o)}}else this.config.start&&this.config.end&&(t=new Date(this.config.start),e=new Date(this.config.end));t&&e&&(this._currentStart?.getTime()===t.getTime()&&this._currentEnd?.getTime()===e.getTime()||(this._currentStart=t,this._currentEnd=e,await this.fetchData(t,e)))}async fetchData(t,e){try{this._isLoading=!0,this.chartData=[];const i=(await this.hass.callWS({type:"recorder/statistics_during_period",start_time:t.toISOString(),end_time:e.toISOString(),statistic_ids:[this.config.entity],period:this.config.resolution||"day"}))[this.config.entity]||[];this.chartLabels=i.map(t=>{const e=new Date(t.start);return e.toLocaleDateString()+" "+e.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}),this.chartData=i.map(t=>void 0!==t.state?t.state:void 0!==t.mean?t.mean:t.sum),this._isLoading=!1,this.requestUpdate(),this.chartData.length>0&&setTimeout(()=>this.renderChart(),0)}catch(t){this._isLoading=!1,console.error("Error fetching statistics:",t)}}renderChart(){const t=this.shadowRoot.querySelector("#chart");if(!t)return;let e=t.querySelector("canvas");e||(e=document.createElement("canvas"),t.innerHTML="",t.appendChild(e)),this.chart?(this.chart.data.labels=this.chartLabels,this.chart.data.datasets[0].data=this.chartData,this.chart.update()):this.chart=new Io(e,{type:this.config.chart_type||"bar",data:{labels:this.chartLabels,datasets:[{label:this.config.title||this.config.entity,data:this.chartData,backgroundColor:"rgba(54, 162, 235, 0.5)",borderColor:"rgba(54, 162, 235, 1)",borderWidth:1}]},options:{responsive:!0,maintainAspectRatio:!1,color:this.hass.themes.darkMode?"#fff":"#666",scales:{y:{beginAtZero:!0,ticks:{color:this.hass.themes.darkMode?"#ccc":"#666"}},x:{ticks:{color:this.hass.themes.darkMode?"#ccc":"#666"}}},plugins:{legend:{labels:{color:this.hass.themes.darkMode?"#fff":"#666"}}}}})}render(){return H`
       <ha-card>
