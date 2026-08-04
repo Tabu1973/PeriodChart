@@ -1,0 +1,6 @@
+{
+  "name": "Fixed Period Chart",
+  "render_readme": true,
+  "filename": "fixed-period-chart.js",
+  "iot_class": "Local Push"
+}

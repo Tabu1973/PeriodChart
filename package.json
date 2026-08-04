@@ -1,0 +1,21 @@
+{
+  "name": "fixed-period-chart",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A custom Home Assistant card to display charts for a fixed time period",
+  "main": "dist/fixed-period-chart.js",
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w"
+  },
+  "dependencies": {
+    "chart.js": "^4.5.1",
+    "lit": "^3.1.2"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^29.0.3",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup": "^4.17.2"
+  }
+}
