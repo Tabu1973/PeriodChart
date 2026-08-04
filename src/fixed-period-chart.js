@@ -166,11 +166,13 @@ class FixedPeriodChart extends LitElement {
       data: {
         labels: this.chartLabels,
         datasets: [{
-          label: this.config.entity,
+          label: this.config.legend_label || this.config.entity,
           data: this.chartData,
-          backgroundColor: this.config.color || 'rgba(54, 162, 235, 0.5)',
+          backgroundColor: this.config.bg_color || this.config.color || 'rgba(54, 162, 235, 0.5)',
           borderColor: this.config.color || 'rgba(54, 162, 235, 1)',
-          borderWidth: 1
+          borderWidth: 1,
+          tension: this.config.smoothing ? 0.4 : 0,
+          fill: !!this.config.bg_color // Fill if background color is set, useful for line charts
         }]
       },
       options: {

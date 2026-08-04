@@ -53,6 +53,18 @@ class FixedPeriodChartEditor extends LitElement {
     return this._config?.color || '';
   }
 
+  get _bg_color() {
+    return this._config?.bg_color || '';
+  }
+
+  get _legend_label() {
+    return this._config?.legend_label || '';
+  }
+
+  get _smoothing() {
+    return this._config?.smoothing === true; // Default false
+  }
+
   get _show_legend() {
     return this._config?.show_legend !== false; // Default true
   }
@@ -115,17 +127,25 @@ class FixedPeriodChartEditor extends LitElement {
         </div>
 
         <div class="side-by-side">
-          <ha-textfield
-            label="Title (Optional)"
-            .value=${this._title}
-            @change=${(ev) => this._updateConfig('title', ev.target.value)}
-          ></ha-textfield>
+          <div>
+            <span class="label">Title (Optional)</span>
+            <input type="text" class="styled-input" .value=${this._title} @input=${(ev) => this._updateConfig('title', ev.target.value)}>
+          </div>
+          <div>
+            <span class="label">Legend Label (Optional)</span>
+            <input type="text" class="styled-input" .value=${this._legend_label} @input=${(ev) => this._updateConfig('legend_label', ev.target.value)}>
+          </div>
+        </div>
 
-          <ha-textfield
-            label="Color (Hex or Name)"
-            .value=${this._color}
-            @change=${(ev) => this._updateConfig('color', ev.target.value)}
-          ></ha-textfield>
+        <div class="side-by-side">
+          <div>
+            <span class="label">Line/Border Color</span>
+            <input type="text" class="styled-input" .value=${this._color} @input=${(ev) => this._updateConfig('color', ev.target.value)} placeholder="e.g. #FF0000 or red">
+          </div>
+          <div>
+            <span class="label">Background/Fill Color</span>
+            <input type="text" class="styled-input" .value=${this._bg_color} @input=${(ev) => this._updateConfig('bg_color', ev.target.value)} placeholder="e.g. rgba(255,0,0,0.2)">
+          </div>
         </div>
 
         <div class="side-by-side">
@@ -190,11 +210,20 @@ class FixedPeriodChartEditor extends LitElement {
               @change=${(ev) => this._updateConfig('show_tooltip', ev.target.checked)}
             ></ha-switch>
           </ha-formfield>
+        </div>
 
+        <div class="side-by-side">
           <ha-formfield .label=${"Show Navigation Arrows"}>
             <ha-switch
               .checked=${this._show_navigation === true}
               @change=${(ev) => this._updateConfig('show_navigation', ev.target.checked)}
+            ></ha-switch>
+          </ha-formfield>
+
+          <ha-formfield .label=${"Smooth Lines"}>
+            <ha-switch
+              .checked=${this._smoothing === true}
+              @change=${(ev) => this._updateConfig('smoothing', ev.target.checked)}
             ></ha-switch>
           </ha-formfield>
         </div>
@@ -250,7 +279,7 @@ class FixedPeriodChartEditor extends LitElement {
         font-size: 12px;
         margin-bottom: 8px;
       }
-      .styled-select {
+      .styled-select, .styled-input {
         width: 100%;
         padding: 12px 16px;
         border-radius: 4px;
@@ -259,6 +288,10 @@ class FixedPeriodChartEditor extends LitElement {
         color: var(--primary-text-color, #212121);
         font-size: 16px;
         font-family: var(--paper-font-body1_-_font-family, 'Roboto', 'Noto', sans-serif);
+        transition: border-color 0.15s ease-in-out;
+        box-sizing: border-box;
+      }
+      .styled-select {
         -webkit-appearance: none;
         -moz-appearance: none;
         appearance: none;
@@ -266,16 +299,15 @@ class FixedPeriodChartEditor extends LitElement {
         background-repeat: no-repeat;
         background-position: right 8px center;
         background-size: 24px;
-        transition: border-color 0.15s ease-in-out;
         cursor: pointer;
       }
-      .styled-select:focus {
+      .styled-select:focus, .styled-input:focus {
         outline: none;
         border-color: var(--primary-color, #03a9f4);
         border-width: 2px;
         padding: 11px 15px; /* adjust for 2px border */
       }
-      .styled-select:hover {
+      .styled-select:hover, .styled-input:hover {
         background-color: rgba(var(--rgb-primary-text-color), 0.04);
       }
     `;
