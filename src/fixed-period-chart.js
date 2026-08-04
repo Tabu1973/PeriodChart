@@ -109,6 +109,10 @@ class FixedPeriodChart extends LitElement {
     try {
       this._isLoading = true;
       this.chartData = []; 
+      this.requestUpdate(); // Force UI to show loading state
+      
+      console.log(`[FixedPeriodChart] Fetching data from ${start.toISOString()} to ${end.toISOString()}`);
+      
       const response = await this.hass.callWS({
         type: 'recorder/statistics_during_period',
         start_time: start.toISOString(),
@@ -118,6 +122,7 @@ class FixedPeriodChart extends LitElement {
       });
 
       const data = response[this.config.entity] || [];
+      console.log(`[FixedPeriodChart] Received ${data.length} data points.`);
       
       // Map data for Chart.js
       this.chartLabels = data.map(point => {
@@ -150,55 +155,49 @@ class FixedPeriodChart extends LitElement {
       chartContainer.appendChild(canvas);
     }
 
-    // If the canvas element changed (e.g., destroyed and recreated by LitElement during loading state),
-    // we must destroy the old Chart.js instance because it still points to the detached canvas.
-    if (this.chart && this.chart.canvas !== canvas) {
+    // Force complete destruction and recreation of the chart to prevent any context issues
+    if (this.chart) {
       this.chart.destroy();
       this.chart = null;
     }
 
-    if (this.chart) {
-      this.chart.data.labels = this.chartLabels;
-      this.chart.data.datasets[0].data = this.chartData;
-      this.chart.update();
-    } else {
-      this.chart = new Chart(canvas, {
-        type: this.config.chart_type || 'bar',
-        data: {
-          labels: this.chartLabels,
-          datasets: [{
-            label: this.config.entity,
-            data: this.chartData,
-            backgroundColor: this.config.color || 'rgba(54, 162, 235, 0.5)',
-            borderColor: this.config.color || 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          color: this.hass.themes.darkMode ? '#fff' : '#666',
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { color: this.hass.themes.darkMode ? '#ccc' : '#666' }
-            },
-            x: {
-              ticks: { color: this.hass.themes.darkMode ? '#ccc' : '#666' }
-            }
+    this.chart = new Chart(canvas, {
+      type: this.config.chart_type || 'bar',
+      data: {
+        labels: this.chartLabels,
+        datasets: [{
+          label: this.config.entity,
+          data: this.chartData,
+          backgroundColor: this.config.color || 'rgba(54, 162, 235, 0.5)',
+          borderColor: this.config.color || 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false, // Disable animation for instant feedback on arrow clicks
+        color: this.hass.themes.darkMode ? '#fff' : '#666',
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { color: this.hass.themes.darkMode ? '#ccc' : '#666' }
           },
-          plugins: {
-            legend: {
-              display: this.config.show_legend !== false,
-              labels: { color: this.hass.themes.darkMode ? '#fff' : '#666' }
-            },
-            tooltip: {
-              enabled: this.config.show_tooltip !== false
-            }
+          x: {
+            ticks: { color: this.hass.themes.darkMode ? '#ccc' : '#666' }
+          }
+        },
+        plugins: {
+          legend: {
+            display: this.config.show_legend !== false,
+            labels: { color: this.hass.themes.darkMode ? '#fff' : '#666' }
+          },
+          tooltip: {
+            enabled: this.config.show_tooltip !== false
           }
         }
-      });
-    }
+      }
+    });
   }
 
   render() {
