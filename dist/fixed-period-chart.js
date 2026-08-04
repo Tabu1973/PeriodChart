@@ -54,8 +54,7 @@ function ht(t){return t+.5|0}rt?.({LitElement:at}),(ot.litElementVersions??=[]).
             label="Period"
             .configValue=${"period"}
             .value=${this._period}
-            @selected=${this._valueChanged}
-            @closed=${t=>t.stopPropagation()}
+            @closed=${this._valueChanged}
           >
             <mwc-list-item value="this_year">This Year</mwc-list-item>
             <mwc-list-item value="last_year">Last Year</mwc-list-item>
@@ -68,8 +67,7 @@ function ht(t){return t+.5|0}rt?.({LitElement:at}),(ot.litElementVersions??=[]).
             label="Resolution"
             .configValue=${"resolution"}
             .value=${this._resolution}
-            @selected=${this._valueChanged}
-            @closed=${t=>t.stopPropagation()}
+            @closed=${this._valueChanged}
           >
             <mwc-list-item value="day">Day</mwc-list-item>
             <mwc-list-item value="hour">Hour</mwc-list-item>
@@ -82,8 +80,7 @@ function ht(t){return t+.5|0}rt?.({LitElement:at}),(ot.litElementVersions??=[]).
             label="Chart Type"
             .configValue=${"chart_type"}
             .value=${this._chart_type}
-            @selected=${this._valueChanged}
-            @closed=${t=>t.stopPropagation()}
+            @closed=${this._valueChanged}
           >
             <mwc-list-item value="bar">Bar</mwc-list-item>
             <mwc-list-item value="line">Line</mwc-list-item>

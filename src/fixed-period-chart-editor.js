@@ -66,8 +66,7 @@ class FixedPeriodChartEditor extends LitElement {
             label="Period"
             .configValue=${"period"}
             .value=${this._period}
-            @selected=${this._valueChanged}
-            @closed=${(e) => e.stopPropagation()}
+            @closed=${this._valueChanged}
           >
             <mwc-list-item value="this_year">This Year</mwc-list-item>
             <mwc-list-item value="last_year">Last Year</mwc-list-item>
@@ -80,8 +79,7 @@ class FixedPeriodChartEditor extends LitElement {
             label="Resolution"
             .configValue=${"resolution"}
             .value=${this._resolution}
-            @selected=${this._valueChanged}
-            @closed=${(e) => e.stopPropagation()}
+            @closed=${this._valueChanged}
           >
             <mwc-list-item value="day">Day</mwc-list-item>
             <mwc-list-item value="hour">Hour</mwc-list-item>
@@ -94,8 +92,7 @@ class FixedPeriodChartEditor extends LitElement {
             label="Chart Type"
             .configValue=${"chart_type"}
             .value=${this._chart_type}
-            @selected=${this._valueChanged}
-            @closed=${(e) => e.stopPropagation()}
+            @closed=${this._valueChanged}
           >
             <mwc-list-item value="bar">Bar</mwc-list-item>
             <mwc-list-item value="line">Line</mwc-list-item>
