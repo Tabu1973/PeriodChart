@@ -69,6 +69,30 @@ class FixedPeriodChartEditor extends LitElement {
     return this._config?.show_data_points !== false; // Default true
   }
 
+  get _show_grid_x() {
+    return this._config?.show_grid_x !== false; // Default true
+  }
+
+  get _show_grid_y() {
+    return this._config?.show_grid_y !== false; // Default true
+  }
+
+  get _show_axis_x() {
+    return this._config?.show_axis_x !== false; // Default true
+  }
+
+  get _show_axis_y() {
+    return this._config?.show_axis_y !== false; // Default true
+  }
+
+  get _max_ticks_x() {
+    return this._config?.max_ticks_x || '';
+  }
+
+  get _step_size_y() {
+    return this._config?.step_size_y || '';
+  }
+
   get _show_legend() {
     return this._config?.show_legend !== false; // Default true
   }
@@ -249,6 +273,47 @@ class FixedPeriodChartEditor extends LitElement {
             ></ha-switch>
           </ha-formfield>
           <div></div>
+        </div>
+
+        <div class="side-by-side">
+          <ha-formfield .label=${"Show X-Axis"}>
+            <ha-switch
+              .checked=${this._show_axis_x !== false}
+              @change=${(ev) => this._updateConfig('show_axis_x', ev.target.checked)}
+            ></ha-switch>
+          </ha-formfield>
+          <ha-formfield .label=${"Show Y-Axis"}>
+            <ha-switch
+              .checked=${this._show_axis_y !== false}
+              @change=${(ev) => this._updateConfig('show_axis_y', ev.target.checked)}
+            ></ha-switch>
+          </ha-formfield>
+        </div>
+
+        <div class="side-by-side">
+          <ha-formfield .label=${"Show X-Grid (Raster)"}>
+            <ha-switch
+              .checked=${this._show_grid_x !== false}
+              @change=${(ev) => this._updateConfig('show_grid_x', ev.target.checked)}
+            ></ha-switch>
+          </ha-formfield>
+          <ha-formfield .label=${"Show Y-Grid (Raster)"}>
+            <ha-switch
+              .checked=${this._show_grid_y !== false}
+              @change=${(ev) => this._updateConfig('show_grid_y', ev.target.checked)}
+            ></ha-switch>
+          </ha-formfield>
+        </div>
+
+        <div class="side-by-side">
+          <div>
+            <span class="label">Max Ticks X-Axis (z.B. 10)</span>
+            <input type="number" class="styled-input" .value=${this._max_ticks_x} @input=${(ev) => this._updateConfig('max_ticks_x', ev.target.value)} placeholder="Auto">
+          </div>
+          <div>
+            <span class="label">Step Size Y-Axis (z.B. 5)</span>
+            <input type="number" class="styled-input" .value=${this._step_size_y} @input=${(ev) => this._updateConfig('step_size_y', ev.target.value)} placeholder="Auto">
+          </div>
         </div>
       </div>
     `;

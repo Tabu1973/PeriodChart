@@ -196,10 +196,26 @@ class FixedPeriodChart extends LitElement {
         scales: {
           y: {
             beginAtZero: true,
-            ticks: { color: this.hass.themes.darkMode ? '#ccc' : '#666' }
+            display: this.config.show_axis_y !== false,
+            grid: {
+              display: this.config.show_grid_y !== false,
+              color: this.hass.themes.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+            },
+            ticks: { 
+              color: this.hass.themes.darkMode ? '#ccc' : '#666',
+              ...(this.config.step_size_y ? { stepSize: Number(this.config.step_size_y) } : {})
+            }
           },
           x: {
-            ticks: { color: this.hass.themes.darkMode ? '#ccc' : '#666' }
+            display: this.config.show_axis_x !== false,
+            grid: {
+              display: this.config.show_grid_x !== false,
+              color: this.hass.themes.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+            },
+            ticks: { 
+              color: this.hass.themes.darkMode ? '#ccc' : '#666',
+              ...(this.config.max_ticks_x ? { maxTicksLimit: Number(this.config.max_ticks_x) } : {})
+            }
           }
         },
         plugins: {
