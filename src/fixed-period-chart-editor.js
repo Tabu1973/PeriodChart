@@ -112,7 +112,10 @@ class FixedPeriodChartEditor extends LitElement {
               <option value="last_year" ?selected=${this._period === 'last_year'}>Last Year</option>
               <option value="this_month" ?selected=${this._period === 'this_month'}>This Month</option>
               <option value="last_month" ?selected=${this._period === 'last_month'}>Last Month</option>
+              <option value="this_week" ?selected=${this._period === 'this_week'}>This Week</option>
+              <option value="last_week" ?selected=${this._period === 'last_week'}>Last Week</option>
               <option value="today" ?selected=${this._period === 'today'}>Today</option>
+              <option value="yesterday" ?selected=${this._period === 'yesterday'}>Yesterday</option>
             </select>
           </div>
 
@@ -140,11 +143,17 @@ class FixedPeriodChartEditor extends LitElement {
         <div class="side-by-side">
           <div>
             <span class="label">Line/Border Color</span>
-            <input type="text" class="styled-input" .value=${this._color} @input=${(ev) => this._updateConfig('color', ev.target.value)} placeholder="e.g. #FF0000 or red">
+            <div style="display: flex; gap: 8px;">
+              <input type="color" style="height: 46px; width: 46px; padding: 0; cursor: pointer; border: 1px solid var(--divider-color); border-radius: 4px;" .value=${/^#[0-9A-F]{6}$/i.test(this._color) ? this._color : '#03a9f4'} @input=${(ev) => this._updateConfig('color', ev.target.value)}>
+              <input type="text" class="styled-input" style="flex: 1;" .value=${this._color} @input=${(ev) => this._updateConfig('color', ev.target.value)} placeholder="e.g. #FF0000 or red">
+            </div>
           </div>
           <div>
             <span class="label">Background/Fill Color</span>
-            <input type="text" class="styled-input" .value=${this._bg_color} @input=${(ev) => this._updateConfig('bg_color', ev.target.value)} placeholder="e.g. rgba(255,0,0,0.2)">
+            <div style="display: flex; gap: 8px;">
+              <input type="color" style="height: 46px; width: 46px; padding: 0; cursor: pointer; border: 1px solid var(--divider-color); border-radius: 4px;" .value=${/^#[0-9A-F]{6}$/i.test(this._bg_color) ? this._bg_color : '#03a9f4'} @input=${(ev) => this._updateConfig('bg_color', ev.target.value)}>
+              <input type="text" class="styled-input" style="flex: 1;" .value=${this._bg_color} @input=${(ev) => this._updateConfig('bg_color', ev.target.value)} placeholder="e.g. rgba(255,0,0,0.2)">
+            </div>
           </div>
         </div>
 
