@@ -141,7 +141,7 @@ function ht(t){return t+.5|0}rt?.({LitElement:at}),(ot.litElementVersions??=[]).
           `:""}
         </details>
 
-        <details class="config-section" open>
+        <details class="config-section">
           <summary><h3>3. Chart Appearance</h3></summary>
           <div class="side-by-side">
             <div>
