@@ -152,6 +152,7 @@ class FixedPeriodChartEditor extends LitElement {
               <option value="last_week" ?selected=${this._period === 'last_week'}>Last Week</option>
               <option value="today" ?selected=${this._period === 'today'}>Today</option>
               <option value="yesterday" ?selected=${this._period === 'yesterday'}>Yesterday</option>
+              <option value="custom" ?selected=${this._period === 'custom'}>Custom (Entities/Picker)</option>
             </select>
           </div>
 

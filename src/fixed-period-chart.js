@@ -73,7 +73,7 @@ class FixedPeriodChart extends LitElement {
         period = this.hass.states[this.config.period_entity].state;
       }
 
-      if (period) {
+      if (period && period !== 'custom') {
         const now = new Date();
         if (period === 'this_year') {
           start = new Date(now.getFullYear() + this._timeOffset, 0, 1);
