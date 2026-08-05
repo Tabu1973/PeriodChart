@@ -27,7 +27,8 @@ class FixedPeriodChartEditor extends LitElement {
   }
 
   _localize(key) {
-    return localize(key, this.hass?.language);
+    const lang = this.hass?.locale?.language || this.hass?.language;
+    return localize(key, lang);
   }
 
   get _entity() {
