@@ -28,7 +28,8 @@ const translations = {
     "resolution.5minute": "5 Minute",
     "resolution.custom": "Custom (Entity)",
     
-    "note.custom_period": "Note on Custom Period: If you specify Start/End entities, they will take precedence over the Period entity. Fill out only the ones you want to use.",
+    "label.use_start_end_entities": "Use Start/End Entities",
+    "label.use_period_entity": "Use Period Entity",
     
     "label.period_entity": "Period Entity (Optional)",
     "label.start_entity": "Start Entity (Optional)",
@@ -95,7 +96,8 @@ const translations = {
     "resolution.5minute": "5 Minuten",
     "resolution.custom": "Benutzerdefiniert (Entität)",
     
-    "note.custom_period": "Hinweis zum benutzerdefinierten Zeitraum: Wenn du Start-/End-Entitäten angibst, überschreiben diese die Zeitraum-Entität. Fülle nur die aus, die du auch nutzen möchtest.",
+    "label.use_start_end_entities": "Start-/End-Entitäten nutzen",
+    "label.use_period_entity": "Zeitraum-Entität nutzen",
     
     "label.period_entity": "Zeitraum-Entität (Optional)",
     "label.start_entity": "Start-Entität (Optional)",

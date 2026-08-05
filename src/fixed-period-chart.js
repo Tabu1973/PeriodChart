@@ -62,7 +62,7 @@ class FixedPeriodChart extends LitElement {
     let periodToUse = this.config.period || 'this_year';
     
     if (isCustom) {
-      if (this.config.start_entity && this.config.end_entity) {
+      if (this.config.use_start_end_entities && this.config.start_entity && this.config.end_entity) {
         const startState = this.hass.states[this.config.start_entity];
         const endState = this.hass.states[this.config.end_entity];
         if (startState && endState && startState.state !== 'unknown' && endState.state !== 'unknown') {
@@ -79,7 +79,7 @@ class FixedPeriodChart extends LitElement {
       } else {
         // Fallback to period_entity if start/end not provided
         periodToUse = 'this_year';
-        if (this.config.period_entity && this.hass.states[this.config.period_entity]) {
+        if (this.config.use_period_entity && this.config.period_entity && this.hass.states[this.config.period_entity]) {
           periodToUse = this.hass.states[this.config.period_entity].state;
         }
       }

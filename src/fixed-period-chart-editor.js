@@ -215,38 +215,56 @@ class FixedPeriodChartEditor extends LitElement {
           </div>
 
           ${this._period === 'custom' ? html`
-            <div style="margin-top: 16px; padding: 8px; background-color: var(--secondary-background-color); border-radius: 4px; font-size: 12px; color: var(--secondary-text-color);">
-              ${this._localize("note.custom_period")}
-            </div>
             <div class="side-by-side" style="margin-top: 16px;">
-              <ha-entity-picker
-                .label=${this._localize("label.period_entity")}
-                .hass=${this.hass}
-                .value=${this._period_entity}
-                .includeDomains=${['input_select']}
-                @value-changed=${(ev) => this._updateConfig('period_entity', ev.detail.value)}
-                allow-custom-entity
-              ></ha-entity-picker>
+              <ha-formfield .label=${this._localize("label.use_period_entity")}>
+                <ha-switch
+                  .checked=${this._config.use_period_entity === true}
+                  @change=${(ev) => this._updateConfig('use_period_entity', ev.target.checked)}
+                ></ha-switch>
+              </ha-formfield>
             </div>
-            <div class="side-by-side" style="margin-top: 16px;">
-              <ha-entity-picker
-                .label=${this._localize("label.start_entity")}
-                .hass=${this.hass}
-                .value=${this._start_entity}
-                .includeDomains=${['input_datetime']}
-                @value-changed=${(ev) => this._updateConfig('start_entity', ev.detail.value)}
-                allow-custom-entity
-              ></ha-entity-picker>
+            ${this._config.use_period_entity ? html`
+              <div class="side-by-side" style="margin-top: 8px; margin-bottom: 16px;">
+                <ha-entity-picker
+                  .label=${this._localize("label.period_entity")}
+                  .hass=${this.hass}
+                  .value=${this._period_entity}
+                  .includeDomains=${['input_select']}
+                  @value-changed=${(ev) => this._updateConfig('period_entity', ev.detail.value)}
+                  allow-custom-entity
+                ></ha-entity-picker>
+              </div>
+            ` : ''}
 
-              <ha-entity-picker
-                .label=${this._localize("label.end_entity")}
-                .hass=${this.hass}
-                .value=${this._end_entity}
-                .includeDomains=${['input_datetime']}
-                @value-changed=${(ev) => this._updateConfig('end_entity', ev.detail.value)}
-                allow-custom-entity
-              ></ha-entity-picker>
+            <div class="side-by-side" style="margin-top: 16px;">
+              <ha-formfield .label=${this._localize("label.use_start_end_entities")}>
+                <ha-switch
+                  .checked=${this._config.use_start_end_entities === true}
+                  @change=${(ev) => this._updateConfig('use_start_end_entities', ev.target.checked)}
+                ></ha-switch>
+              </ha-formfield>
             </div>
+            ${this._config.use_start_end_entities ? html`
+              <div class="side-by-side" style="margin-top: 8px;">
+                <ha-entity-picker
+                  .label=${this._localize("label.start_entity")}
+                  .hass=${this.hass}
+                  .value=${this._start_entity}
+                  .includeDomains=${['input_datetime']}
+                  @value-changed=${(ev) => this._updateConfig('start_entity', ev.detail.value)}
+                  allow-custom-entity
+                ></ha-entity-picker>
+
+                <ha-entity-picker
+                  .label=${this._localize("label.end_entity")}
+                  .hass=${this.hass}
+                  .value=${this._end_entity}
+                  .includeDomains=${['input_datetime']}
+                  @value-changed=${(ev) => this._updateConfig('end_entity', ev.detail.value)}
+                  allow-custom-entity
+                ></ha-entity-picker>
+              </div>
+            ` : ''}
           ` : ''}
 
           ${this._resolution === 'custom' ? html`
