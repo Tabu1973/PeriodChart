@@ -55,42 +55,7 @@ class FixedPeriodChart extends LitElement {
 
   async updateDatesAndFetch() {
     let start, end;
-    let period = this.config.period;
-
-    if (this.config.period_entity && this.hass.states[this.config.period_entity]) {
-      period = this.hass.states[this.config.period_entity].state;
-    }
-
-    if (period) {
-      const now = new Date();
-      if (period === 'this_year') {
-        start = new Date(now.getFullYear() + this._timeOffset, 0, 1);
-        end = new Date(now.getFullYear() + this._timeOffset, 11, 31, 23, 59, 59);
-      } else if (period === 'last_year') {
-        start = new Date(now.getFullYear() - 1 + this._timeOffset, 0, 1);
-        end = new Date(now.getFullYear() - 1 + this._timeOffset, 11, 31, 23, 59, 59);
-      } else if (period === 'this_month') {
-        start = new Date(now.getFullYear(), now.getMonth() + this._timeOffset, 1);
-        end = new Date(now.getFullYear(), now.getMonth() + 1 + this._timeOffset, 0, 23, 59, 59);
-      } else if (period === 'last_month') {
-        start = new Date(now.getFullYear(), now.getMonth() - 1 + this._timeOffset, 1);
-        end = new Date(now.getFullYear(), now.getMonth() + this._timeOffset, 0, 23, 59, 59);
-      } else if (period === 'this_week') {
-        const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
-        start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + 1 + (this._timeOffset * 7));
-        end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + 7 + (this._timeOffset * 7), 23, 59, 59);
-      } else if (period === 'last_week') {
-        const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
-        start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek - 6 + (this._timeOffset * 7));
-        end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + (this._timeOffset * 7), 23, 59, 59);
-      } else if (period === 'today') {
-        start = new Date(now.getFullYear(), now.getMonth(), now.getDate() + this._timeOffset);
-        end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + this._timeOffset, 23, 59, 59);
-      } else if (period === 'yesterday') {
-        start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1 + this._timeOffset);
-        end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1 + this._timeOffset, 23, 59, 59);
-      }
-    } else if (this.config.start_entity && this.config.end_entity) {
+    if (this.config.start_entity && this.config.end_entity) {
       const startState = this.hass.states[this.config.start_entity];
       const endState = this.hass.states[this.config.end_entity];
       if (startState && endState && startState.state !== 'unknown' && endState.state !== 'unknown') {
@@ -101,9 +66,46 @@ class FixedPeriodChart extends LitElement {
         start = new Date(sStr);
         end = new Date(eStr);
       }
-    } else if (this.config.start && this.config.end) {
-      start = new Date(this.config.start);
-      end = new Date(this.config.end);
+    } else {
+      let period = this.config.period;
+
+      if (this.config.period_entity && this.hass.states[this.config.period_entity]) {
+        period = this.hass.states[this.config.period_entity].state;
+      }
+
+      if (period) {
+        const now = new Date();
+        if (period === 'this_year') {
+          start = new Date(now.getFullYear() + this._timeOffset, 0, 1);
+          end = new Date(now.getFullYear() + this._timeOffset, 11, 31, 23, 59, 59);
+        } else if (period === 'last_year') {
+          start = new Date(now.getFullYear() - 1 + this._timeOffset, 0, 1);
+          end = new Date(now.getFullYear() - 1 + this._timeOffset, 11, 31, 23, 59, 59);
+        } else if (period === 'this_month') {
+          start = new Date(now.getFullYear(), now.getMonth() + this._timeOffset, 1);
+          end = new Date(now.getFullYear(), now.getMonth() + 1 + this._timeOffset, 0, 23, 59, 59);
+        } else if (period === 'last_month') {
+          start = new Date(now.getFullYear(), now.getMonth() - 1 + this._timeOffset, 1);
+          end = new Date(now.getFullYear(), now.getMonth() + this._timeOffset, 0, 23, 59, 59);
+        } else if (period === 'this_week') {
+          const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
+          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + 1 + (this._timeOffset * 7));
+          end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + 7 + (this._timeOffset * 7), 23, 59, 59);
+        } else if (period === 'last_week') {
+          const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
+          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek - 6 + (this._timeOffset * 7));
+          end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + (this._timeOffset * 7), 23, 59, 59);
+        } else if (period === 'today') {
+          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() + this._timeOffset);
+          end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + this._timeOffset, 23, 59, 59);
+        } else if (period === 'yesterday') {
+          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1 + this._timeOffset);
+          end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1 + this._timeOffset, 23, 59, 59);
+        }
+      } else if (this.config.start && this.config.end) {
+        start = new Date(this.config.start);
+        end = new Date(this.config.end);
+      }
     }
 
     if (start && end) {
