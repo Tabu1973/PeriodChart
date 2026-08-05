@@ -108,28 +108,59 @@ class FixedPeriodChart extends LitElement {
       }
     }
 
+    let resolution = this.config.resolution || 'day';
+    if (this.config.resolution_entity && this.hass.states[this.config.resolution_entity]) {
+      resolution = this.hass.states[this.config.resolution_entity].state;
+    }
+
+    let visualConfigChanged = false;
+    let color = this.config.color;
+    if (this.config.color_entity && this.hass.states[this.config.color_entity]) {
+      color = this.hass.states[this.config.color_entity].state;
+    }
+    if (this._currentColor !== color) {
+      this._currentColor = color;
+      visualConfigChanged = true;
+    }
+
+    let bg_color = this.config.bg_color;
+    if (this.config.bg_color_entity && this.hass.states[this.config.bg_color_entity]) {
+      bg_color = this.hass.states[this.config.bg_color_entity].state;
+    }
+    if (this._currentBgColor !== bg_color) {
+      this._currentBgColor = bg_color;
+      visualConfigChanged = true;
+    }
+
+    let line_width = this.config.line_width;
+    if (this.config.line_width_entity && this.hass.states[this.config.line_width_entity]) {
+      line_width = this.hass.states[this.config.line_width_entity].state;
+    }
+    if (this._currentLineWidth !== line_width) {
+      this._currentLineWidth = line_width;
+      visualConfigChanged = true;
+    }
+
     if (start && end) {
-      // Check if dates actually changed to avoid infinite loops when hass updates
-      if (this._currentStart?.getTime() !== start.getTime() || this._currentEnd?.getTime() !== end.getTime()) {
+      // Check if dates or resolution actually changed to avoid infinite loops when hass updates
+      if (this._currentStart?.getTime() !== start.getTime() || this._currentEnd?.getTime() !== end.getTime() || this._currentResolution !== resolution) {
         this._currentStart = start;
         this._currentEnd = end;
-        await this.fetchData(start, end);
+        this._currentResolution = resolution;
+        await this.fetchData(start, end, resolution);
+      } else if (visualConfigChanged && this.chartData.length > 0) {
+        this.renderChart();
       }
     }
   }
 
-  async fetchData(start, end) {
+  async fetchData(start, end, resolution) {
     try {
       this._isLoading = true;
       this.chartData = []; 
       this.requestUpdate(); // Force UI to show loading state
       
       console.log(`[FixedPeriodChart] Fetching data from ${start.toISOString()} to ${end.toISOString()}`);
-      
-      let resolution = this.config.resolution || 'day';
-      if (this.config.resolution_entity && this.hass.states[this.config.resolution_entity]) {
-        resolution = this.hass.states[this.config.resolution_entity].state;
-      }
       
       const daysSinceStart = (new Date().getTime() - start.getTime()) / (1000 * 3600 * 24);
       if (resolution === '5minute' && daysSinceStart > 7) {
