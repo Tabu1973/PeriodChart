@@ -137,6 +137,10 @@ class FixedPeriodChartEditor extends LitElement {
     return this._config?.bg_color_entity || '';
   }
 
+  get _card_bg_color_entity() {
+    return this._config?.card_bg_color_entity || '';
+  }
+
   get _line_width_entity() {
     return this._config?.line_width_entity || '';
   }
@@ -200,7 +204,13 @@ class FixedPeriodChartEditor extends LitElement {
 
         <div class="side-by-side">
           ${this.renderColorPicker("Card Background Color", "card_bg_color")}
-          <div></div>
+          <ha-entity-picker
+            .label=${"Card Background Entity (Optional)"}
+            .hass=${this.hass}
+            .value=${this._card_bg_color_entity}
+            @value-changed=${(ev) => this._updateConfig('card_bg_color_entity', ev.detail.value)}
+            allow-custom-entity
+          ></ha-entity-picker>
         </div>
 
         <div class="side-by-side">

@@ -292,8 +292,15 @@ class FixedPeriodChart extends LitElement {
   }
 
   render() {
+    if (!this.config) return html``;
+
+    let card_bg_color = this.config.card_bg_color;
+    if (this.config.card_bg_color_entity && this.hass && this.hass.states[this.config.card_bg_color_entity]) {
+      card_bg_color = this.hass.states[this.config.card_bg_color_entity].state;
+    }
+
     return html`
-      <ha-card style=${this.config.card_bg_color ? `background: ${this.config.card_bg_color};` : ''}>
+      <ha-card style=${card_bg_color ? `background: ${card_bg_color};` : ''}>
         ${this.config.title || this.config.show_navigation ? html`
           <div class="card-header-custom">
             ${this.config.show_navigation ? html`<ha-icon-button .path=${"M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"} @click=${() => this.navigateTime(-1)}></ha-icon-button>` : ''}
