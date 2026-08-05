@@ -126,12 +126,19 @@ class FixedPeriodChart extends LitElement {
       
       console.log(`[FixedPeriodChart] Fetching data from ${start.toISOString()} to ${end.toISOString()}`);
       
+      let resolution = this.config.resolution || 'day';
+      const daysSinceStart = (new Date().getTime() - start.getTime()) / (1000 * 3600 * 24);
+      if (resolution === '5minute' && daysSinceStart > 7) {
+        resolution = 'hour';
+        console.log('[FixedPeriodChart] Auto-switched resolution from 5minute to hour due to historical data limits');
+      }
+
       const response = await this.hass.callWS({
         type: 'recorder/statistics_during_period',
         start_time: start.toISOString(),
         end_time: end.toISOString(),
         statistic_ids: [this.config.entity],
-        period: this.config.resolution || 'day'
+        period: resolution
       });
 
       const data = response[this.config.entity] || [];
