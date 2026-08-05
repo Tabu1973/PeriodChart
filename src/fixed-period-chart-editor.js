@@ -150,7 +150,7 @@ class FixedPeriodChartEditor extends LitElement {
       return html``;
     }
 
-    const useDynamicLineWidth = this._force_dynamic_line_width_open || !!this._config.line_width_entity;
+    const useDynamicLineWidth = !!this._config.use_dynamic_line_width;
 
     return html`
       <div class="card-config">
@@ -289,15 +289,7 @@ class FixedPeriodChartEditor extends LitElement {
             <ha-formfield .label=${"Use Dynamic Entity for Line Width"}>
               <ha-switch
                 .checked=${useDynamicLineWidth}
-                @change=${(ev) => {
-                  if (ev.target.checked) {
-                    this._force_dynamic_line_width_open = true;
-                    this.requestUpdate();
-                  } else {
-                    this._force_dynamic_line_width_open = false;
-                    this._updateConfig('line_width_entity', '');
-                  }
-                }}
+                @change=${(ev) => this._updateConfig('use_dynamic_line_width', ev.target.checked)}
               ></ha-switch>
             </ha-formfield>
           </div>
@@ -446,7 +438,7 @@ class FixedPeriodChartEditor extends LitElement {
     const parsed = this._parseColor(colorVal);
     const entityKey = key + '_entity';
     const entityVal = this[`_${entityKey}`] || '';
-    const useDynamic = this[`_force_dynamic_${key}_open`] || !!this._config?.[entityKey];
+    const useDynamic = !!this._config?.[`use_dynamic_${key}`];
     
     return html`
       <div style="flex: 1;">
@@ -455,15 +447,7 @@ class FixedPeriodChartEditor extends LitElement {
           <ha-formfield .label=${"Dynamic"}>
             <ha-switch
               .checked=${useDynamic}
-              @change=${(ev) => {
-                if (ev.target.checked) {
-                  this[`_force_dynamic_${key}_open`] = true;
-                  this.requestUpdate();
-                } else {
-                  this[`_force_dynamic_${key}_open`] = false;
-                  this._updateConfig(entityKey, '');
-                }
-              }}
+              @change=${(ev) => this._updateConfig(`use_dynamic_${key}`, ev.target.checked)}
             ></ha-switch>
           </ha-formfield>
         </div>

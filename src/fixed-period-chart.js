@@ -115,7 +115,7 @@ class FixedPeriodChart extends LitElement {
 
     let visualConfigChanged = false;
     let color = this.config.color;
-    if (this.config.color_entity && this.hass.states[this.config.color_entity]) {
+    if (this.config.use_dynamic_color && this.config.color_entity && this.hass.states[this.config.color_entity]) {
       color = this.hass.states[this.config.color_entity].state;
     }
     if (this._currentColor !== color) {
@@ -124,7 +124,7 @@ class FixedPeriodChart extends LitElement {
     }
 
     let bg_color = this.config.bg_color;
-    if (this.config.bg_color_entity && this.hass.states[this.config.bg_color_entity]) {
+    if (this.config.use_dynamic_bg_color && this.config.bg_color_entity && this.hass.states[this.config.bg_color_entity]) {
       bg_color = this.hass.states[this.config.bg_color_entity].state;
     }
     if (this._currentBgColor !== bg_color) {
@@ -133,7 +133,7 @@ class FixedPeriodChart extends LitElement {
     }
 
     let line_width = this.config.line_width;
-    if (this.config.line_width_entity && this.hass.states[this.config.line_width_entity]) {
+    if (this.config.use_dynamic_line_width && this.config.line_width_entity && this.hass.states[this.config.line_width_entity]) {
       line_width = this.hass.states[this.config.line_width_entity].state;
     }
     if (this._currentLineWidth !== line_width) {
@@ -218,17 +218,17 @@ class FixedPeriodChart extends LitElement {
 
     // Resolve dynamic entities
     let color = this.config.color;
-    if (this.config.color_entity && this.hass.states[this.config.color_entity]) {
+    if (this.config.use_dynamic_color && this.config.color_entity && this.hass.states[this.config.color_entity]) {
       color = this.hass.states[this.config.color_entity].state;
     }
 
     let bg_color = this.config.bg_color;
-    if (this.config.bg_color_entity && this.hass.states[this.config.bg_color_entity]) {
+    if (this.config.use_dynamic_bg_color && this.config.bg_color_entity && this.hass.states[this.config.bg_color_entity]) {
       bg_color = this.hass.states[this.config.bg_color_entity].state;
     }
 
     let line_width = this.config.line_width;
-    if (this.config.line_width_entity && this.hass.states[this.config.line_width_entity]) {
+    if (this.config.use_dynamic_line_width && this.config.line_width_entity && this.hass.states[this.config.line_width_entity]) {
       line_width = this.hass.states[this.config.line_width_entity].state;
     }
 
@@ -295,7 +295,7 @@ class FixedPeriodChart extends LitElement {
     if (!this.config) return html``;
 
     let card_bg_color = this.config.card_bg_color;
-    if (this.config.card_bg_color_entity && this.hass && this.hass.states[this.config.card_bg_color_entity]) {
+    if (this.config.use_dynamic_card_bg_color && this.config.card_bg_color_entity && this.hass && this.hass.states[this.config.card_bg_color_entity]) {
       card_bg_color = this.hass.states[this.config.card_bg_color_entity].state;
     }
 
