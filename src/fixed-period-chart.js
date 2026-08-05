@@ -240,7 +240,21 @@ class FixedPeriodChart extends LitElement {
       line_width = this.hass.states[this.config.line_width_entity].state;
     }
 
-    this.chart = new Chart(canvas, {
+            let categoryScale = {
+          display: this.config.show_x_axis !== false,
+          grid: { display: this.config.show_x_grid !== false },
+          ticks: { maxTicksLimit: this.config.max_ticks_x ? Number(this.config.max_ticks_x) : undefined }
+        };
+        let valueScale = {
+          display: this.config.show_y_axis !== false,
+          grid: { display: this.config.show_y_grid !== false },
+          ticks: {
+            stepSize: this.config.step_size_y ? Number(this.config.step_size_y) : undefined
+          }
+        };
+        let chartScales = this.config.horizontal ? { x: valueScale, y: categoryScale } : { x: categoryScale, y: valueScale };
+
+      this.chart = new Chart(canvas, {
       type: this.config.chart_type || 'bar',
       data: {
         labels: this.chartLabels,
@@ -257,8 +271,9 @@ class FixedPeriodChart extends LitElement {
         }]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
+          indexAxis: this.config.horizontal ? 'y' : 'x',
+          responsive: true,
+          maintainAspectRatio: false,
         animation: false, // Disable animation for instant feedback on arrow clicks
         color: this.hass.themes.darkMode ? '#fff' : '#666',
         scales: {

@@ -39,6 +39,7 @@ const translations = {
     "label.resolution_entity": "Resolution Entity",
     
     "label.chart_type": "Chart Type",
+    "label.horizontal_chart": "Horizontal Chart",
     "type.bar": "Bar",
     "type.line": "Line",
     
@@ -109,6 +110,7 @@ const translations = {
     "label.resolution_entity": "Auflösungs-Entität",
     
     "label.chart_type": "Diagramm-Typ",
+    "label.horizontal_chart": "Horizontales Diagramm",
     "type.bar": "Balken (Bar)",
     "type.line": "Linie (Line)",
     
