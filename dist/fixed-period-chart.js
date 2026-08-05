@@ -183,6 +183,16 @@ function lt(t){return t+.5|0}rt?.({LitElement:at}),(ot.litElementVersions??=[]).
             </div>
           </div>
 
+          <div class="side-by-side" style="margin-top: 16px;">
+            <ha-formfield .label=${this._localize("label.horizontal_chart")}>
+              <ha-switch
+                .checked=${!0===this._config.horizontal}
+                @change=${t=>this._updateConfig("horizontal",t.target.checked)}
+              ></ha-switch>
+            </ha-formfield>
+          </div>
+
+
           ${"line"===this._chart_type?W`
             <div class="side-by-side" style="margin-top: 16px;">
               <ha-formfield .label=${this._localize("label.smooth_lines")}>

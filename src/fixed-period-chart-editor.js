@@ -305,6 +305,16 @@ class FixedPeriodChartEditor extends LitElement {
             </div>
           </div>
 
+          <div class="side-by-side" style="margin-top: 16px;">
+            <ha-formfield .label=${this._localize("label.horizontal_chart")}>
+              <ha-switch
+                .checked=${this._config.horizontal === true}
+                @change=${(ev) => this._updateConfig('horizontal', ev.target.checked)}
+              ></ha-switch>
+            </ha-formfield>
+          </div>
+
+
           ${this._chart_type === 'line' ? html`
             <div class="side-by-side" style="margin-top: 16px;">
               <ha-formfield .label=${this._localize("label.smooth_lines")}>
