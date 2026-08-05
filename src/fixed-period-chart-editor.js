@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import localize from './localize';
 
 const fireEvent = (node, type, detail, options) => {
   options = options || {};
@@ -23,6 +24,10 @@ class FixedPeriodChartEditor extends LitElement {
 
   setConfig(config) {
     this._config = config;
+  }
+
+  _localize(key) {
+    return localize(key, this.hass?.language);
   }
 
   get _entity() {
@@ -158,9 +163,9 @@ class FixedPeriodChartEditor extends LitElement {
       <div class="card-config">
         
         <details class="config-section" open>
-          <summary><h3>1. Basic Settings</h3></summary>
+          <summary><h3>${this._localize('section.basic')}</h3></summary>
           <ha-entity-picker
-            .label=${"Entity (Sensor)"}
+            .label=${this._localize('label.entity')}
             .hass=${this.hass}
             .value=${this._entity}
             @value-changed=${(ev) => this._updateConfig('entity', ev.detail.value)}
@@ -169,52 +174,52 @@ class FixedPeriodChartEditor extends LitElement {
 
           <div class="side-by-side" style="margin-top: 16px;">
             <div>
-              <span class="label">Title (Optional)</span>
+              <span class="label">${this._localize("label.title")}</span>
               <input type="text" class="styled-input" .value=${this._title} @input=${(ev) => this._updateConfig('title', ev.target.value)}>
             </div>
             <div>
-              <span class="label">Legend Label (Optional)</span>
+              <span class="label">${this._localize("label.legend_label")}</span>
               <input type="text" class="styled-input" .value=${this._legend_label} @input=${(ev) => this._updateConfig('legend_label', ev.target.value)}>
             </div>
           </div>
         </details>
 
         <details class="config-section">
-          <summary><h3>2. Time & Resolution</h3></summary>
+          <summary><h3>${this._localize('section.time')}</h3></summary>
           <div class="side-by-side">
             <div>
-              <span class="label">Period</span>
+              <span class="label">${this._localize("label.period")}</span>
               <select class="styled-select" @change=${(ev) => this._updateConfig('period', ev.target.value)}>
-                <option value="this_year" ?selected=${this._period === 'this_year'}>This Year</option>
-                <option value="last_year" ?selected=${this._period === 'last_year'}>Last Year</option>
-                <option value="this_month" ?selected=${this._period === 'this_month'}>This Month</option>
-                <option value="last_month" ?selected=${this._period === 'last_month'}>Last Month</option>
-                <option value="this_week" ?selected=${this._period === 'this_week'}>This Week</option>
-                <option value="last_week" ?selected=${this._period === 'last_week'}>Last Week</option>
-                <option value="today" ?selected=${this._period === 'today'}>Today</option>
-                <option value="yesterday" ?selected=${this._period === 'yesterday'}>Yesterday</option>
-                <option value="custom" ?selected=${this._period === 'custom'}>Custom (Entities/Picker)</option>
+                <option value="this_year" ?selected=${this._period === 'this_year'}>${this._localize("period.this_year")}</option>
+                <option value="last_year" ?selected=${this._period === 'last_year'}>${this._localize("period.last_year")}</option>
+                <option value="this_month" ?selected=${this._period === 'this_month'}>${this._localize("period.this_month")}</option>
+                <option value="last_month" ?selected=${this._period === 'last_month'}>${this._localize("period.last_month")}</option>
+                <option value="this_week" ?selected=${this._period === 'this_week'}>${this._localize("period.this_week")}</option>
+                <option value="last_week" ?selected=${this._period === 'last_week'}>${this._localize("period.last_week")}</option>
+                <option value="today" ?selected=${this._period === 'today'}>${this._localize("period.today")}</option>
+                <option value="yesterday" ?selected=${this._period === 'yesterday'}>${this._localize("period.yesterday")}</option>
+                <option value="custom" ?selected=${this._period === 'custom'}>${this._localize("period.custom")}</option>
               </select>
             </div>
 
             <div>
-              <span class="label">Resolution</span>
+              <span class="label">${this._localize("label.resolution")}</span>
               <select class="styled-select" @change=${(ev) => this._updateConfig('resolution', ev.target.value)}>
-                <option value="day" ?selected=${this._resolution === 'day'}>Day</option>
-                <option value="hour" ?selected=${this._resolution === 'hour'}>Hour</option>
-                <option value="5minute" ?selected=${this._resolution === '5minute'}>5 Minute</option>
-                <option value="custom" ?selected=${this._resolution === 'custom'}>Custom (Entity)</option>
+                <option value="day" ?selected=${this._resolution === 'day'}>${this._localize("resolution.day")}</option>
+                <option value="hour" ?selected=${this._resolution === 'hour'}>${this._localize("resolution.hour")}</option>
+                <option value="5minute" ?selected=${this._resolution === '5minute'}>${this._localize("resolution.5minute")}</option>
+                <option value="custom" ?selected=${this._resolution === 'custom'}>${this._localize("resolution.custom")}</option>
               </select>
             </div>
           </div>
 
           ${this._period === 'custom' ? html`
             <div style="margin-top: 16px; padding: 8px; background-color: var(--secondary-background-color); border-radius: 4px; font-size: 12px; color: var(--secondary-text-color);">
-              <strong>Note on Custom Period:</strong> If you specify <em>Start/End</em> entities, they will take precedence over the <em>Period</em> entity. Fill out only the ones you want to use.
+              ${this._localize("note.custom_period")}
             </div>
             <div class="side-by-side" style="margin-top: 16px;">
               <ha-entity-picker
-                .label=${"Period Entity (Optional)"}
+                .label=${this._localize("label.period_entity")}
                 .hass=${this.hass}
                 .value=${this._period_entity}
                 .includeDomains=${['input_select']}
@@ -224,7 +229,7 @@ class FixedPeriodChartEditor extends LitElement {
             </div>
             <div class="side-by-side" style="margin-top: 16px;">
               <ha-entity-picker
-                .label=${"Start Entity (Optional)"}
+                .label=${this._localize("label.start_entity")}
                 .hass=${this.hass}
                 .value=${this._start_entity}
                 .includeDomains=${['input_datetime']}
@@ -233,7 +238,7 @@ class FixedPeriodChartEditor extends LitElement {
               ></ha-entity-picker>
 
               <ha-entity-picker
-                .label=${"End Entity (Optional)"}
+                .label=${this._localize("label.end_entity")}
                 .hass=${this.hass}
                 .value=${this._end_entity}
                 .includeDomains=${['input_datetime']}
@@ -246,7 +251,7 @@ class FixedPeriodChartEditor extends LitElement {
           ${this._resolution === 'custom' ? html`
             <div class="side-by-side" style="margin-top: 16px;">
               <ha-entity-picker
-                .label=${"Resolution Entity"}
+                .label=${this._localize("label.resolution_entity")}
                 .hass=${this.hass}
                 .value=${this._resolution_entity}
                 .includeDomains=${['input_select', 'input_text']}
@@ -258,30 +263,30 @@ class FixedPeriodChartEditor extends LitElement {
         </details>
 
         <details class="config-section">
-          <summary><h3>3. Chart Appearance</h3></summary>
+          <summary><h3>${this._localize('section.appearance')}</h3></summary>
           <div class="side-by-side">
             <div>
-              <span class="label">Chart Type</span>
+              <span class="label">${this._localize("label.chart_type")}</span>
               <select class="styled-select" @change=${(ev) => this._updateConfig('chart_type', ev.target.value)}>
-                <option value="bar" ?selected=${this._chart_type === 'bar'}>Bar</option>
-                <option value="line" ?selected=${this._chart_type === 'line'}>Line</option>
+                <option value="bar" ?selected=${this._chart_type === 'bar'}>${this._localize("type.bar")}</option>
+                <option value="line" ?selected=${this._chart_type === 'line'}>${this._localize("type.line")}</option>
               </select>
             </div>
             <div>
-              <span class="label">Line/Border Width (z.B. 2)</span>
-              <input type="number" class="styled-input" .value=${this._line_width} @input=${(ev) => this._updateConfig('line_width', ev.target.value)} placeholder="Auto">
+              <span class="label">${this._localize("label.line_width")}</span>
+              <input type="number" class="styled-input" .value=${this._line_width} @input=${(ev) => this._updateConfig('line_width', ev.target.value)} placeholder=${this._localize("label.auto")}>
             </div>
           </div>
 
           ${this._chart_type === 'line' ? html`
             <div class="side-by-side" style="margin-top: 16px;">
-              <ha-formfield .label=${"Smooth Lines"}>
+              <ha-formfield .label=${this._localize("label.smooth_lines")}>
                 <ha-switch
                   .checked=${this._smoothing === true}
                   @change=${(ev) => this._updateConfig('smoothing', ev.target.checked)}
                 ></ha-switch>
               </ha-formfield>
-              <ha-formfield .label=${"Show Data Points"}>
+              <ha-formfield .label=${this._localize("label.show_data_points")}>
                 <ha-switch
                   .checked=${this._show_data_points !== false}
                   @change=${(ev) => this._updateConfig('show_data_points', ev.target.checked)}
@@ -291,7 +296,7 @@ class FixedPeriodChartEditor extends LitElement {
           ` : ''}
 
           <div style="margin-top: 16px;">
-            <ha-formfield .label=${"Use Dynamic Entity for Line Width"}>
+            <ha-formfield .label=${this._localize("label.use_dynamic_line_width")}>
               <ha-switch
                 .checked=${useDynamicLineWidth}
                 @change=${(ev) => this._updateConfig('use_dynamic_line_width', ev.target.checked)}
@@ -302,7 +307,7 @@ class FixedPeriodChartEditor extends LitElement {
           ${useDynamicLineWidth ? html`
             <div class="side-by-side" style="margin-top: 16px;">
               <ha-entity-picker
-                .label=${"Line Width Entity"}
+                .label=${this._localize("label.line_width_entity")}
                 .hass=${this.hass}
                 .value=${this._line_width_entity}
                 .includeDomains=${['input_number', 'number']}
@@ -314,12 +319,12 @@ class FixedPeriodChartEditor extends LitElement {
         </details>
 
         <details class="config-section">
-          <summary><h3>4. Colors</h3></summary>
+          <summary><h3>${this._localize('section.colors')}</h3></summary>
           <div class="side-by-side">
             ${this.renderColorPicker("Line/Border Color", "color")}
           </div>
           <div class="side-by-side" style="margin-top: 16px;">
-            ${this.renderColorPicker("Chart Fill Color", "bg_color")}
+            ${this.renderColorPicker(this._localize("color.fill"), "bg_color")}
           </div>
           <div class="side-by-side" style="margin-top: 16px;">
             ${this.renderColorPicker("Card Background Color", "card_bg_color")}
@@ -327,15 +332,15 @@ class FixedPeriodChartEditor extends LitElement {
         </details>
 
         <details class="config-section">
-          <summary><h3>5. Display & Axes</h3></summary>
+          <summary><h3>${this._localize('section.display')}</h3></summary>
           <div class="side-by-side">
-            <ha-formfield .label=${"Show Date Picker"}>
+            <ha-formfield .label=${this._localize("label.show_date_picker")}>
               <ha-switch
                 .checked=${this._show_date_picker !== false}
                 @change=${(ev) => this._updateConfig('show_date_picker', ev.target.checked)}
               ></ha-switch>
             </ha-formfield>
-            <ha-formfield .label=${"Show Navigation Arrows"}>
+            <ha-formfield .label=${this._localize("label.show_navigation")}>
               <ha-switch
                 .checked=${this._show_navigation === true}
                 @change=${(ev) => this._updateConfig('show_navigation', ev.target.checked)}
@@ -344,13 +349,13 @@ class FixedPeriodChartEditor extends LitElement {
           </div>
 
           <div class="side-by-side" style="margin-top: 16px;">
-            <ha-formfield .label=${"Show Legend"}>
+            <ha-formfield .label=${this._localize("label.show_legend")}>
               <ha-switch
                 .checked=${this._show_legend !== false}
                 @change=${(ev) => this._updateConfig('show_legend', ev.target.checked)}
               ></ha-switch>
             </ha-formfield>
-            <ha-formfield .label=${"Show Tooltips"}>
+            <ha-formfield .label=${this._localize("label.show_tooltips")}>
               <ha-switch
                 .checked=${this._show_tooltip !== false}
                 @change=${(ev) => this._updateConfig('show_tooltip', ev.target.checked)}
@@ -359,13 +364,13 @@ class FixedPeriodChartEditor extends LitElement {
           </div>
 
           <div class="side-by-side" style="margin-top: 16px;">
-            <ha-formfield .label=${"Show X-Axis"}>
+            <ha-formfield .label=${this._localize("label.show_x_axis")}>
               <ha-switch
                 .checked=${this._show_axis_x !== false}
                 @change=${(ev) => this._updateConfig('show_axis_x', ev.target.checked)}
               ></ha-switch>
             </ha-formfield>
-            <ha-formfield .label=${"Show Y-Axis"}>
+            <ha-formfield .label=${this._localize("label.show_y_axis")}>
               <ha-switch
                 .checked=${this._show_axis_y !== false}
                 @change=${(ev) => this._updateConfig('show_axis_y', ev.target.checked)}
@@ -374,13 +379,13 @@ class FixedPeriodChartEditor extends LitElement {
           </div>
 
           <div class="side-by-side" style="margin-top: 16px;">
-            <ha-formfield .label=${"Show X-Grid (Raster)"}>
+            <ha-formfield .label=${this._localize("label.show_x_grid")}>
               <ha-switch
                 .checked=${this._show_grid_x !== false}
                 @change=${(ev) => this._updateConfig('show_grid_x', ev.target.checked)}
               ></ha-switch>
             </ha-formfield>
-            <ha-formfield .label=${"Show Y-Grid (Raster)"}>
+            <ha-formfield .label=${this._localize("label.show_y_grid")}>
               <ha-switch
                 .checked=${this._show_grid_y !== false}
                 @change=${(ev) => this._updateConfig('show_grid_y', ev.target.checked)}
@@ -390,12 +395,12 @@ class FixedPeriodChartEditor extends LitElement {
 
           <div class="side-by-side" style="margin-top: 16px;">
             <div>
-              <span class="label">Max Ticks X-Axis (z.B. 10)</span>
-              <input type="number" class="styled-input" .value=${this._max_ticks_x} @input=${(ev) => this._updateConfig('max_ticks_x', ev.target.value)} placeholder="Auto">
+              <span class="label">${this._localize("label.max_ticks_x")}</span>
+              <input type="number" class="styled-input" .value=${this._max_ticks_x} @input=${(ev) => this._updateConfig('max_ticks_x', ev.target.value)} placeholder=${this._localize("label.auto")}>
             </div>
             <div>
-              <span class="label">Step Size Y-Axis (z.B. 5)</span>
-              <input type="number" class="styled-input" .value=${this._step_size_y} @input=${(ev) => this._updateConfig('step_size_y', ev.target.value)} placeholder="Auto">
+              <span class="label">${this._localize("label.step_size_y")}</span>
+              <input type="number" class="styled-input" .value=${this._step_size_y} @input=${(ev) => this._updateConfig('step_size_y', ev.target.value)} placeholder=${this._localize("label.auto")}>
             </div>
           </div>
         </details>
@@ -449,7 +454,7 @@ class FixedPeriodChartEditor extends LitElement {
       <div style="flex: 1;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
           <span class="label" style="margin: 0;">${label}</span>
-          <ha-formfield .label=${"Dynamic"}>
+          <ha-formfield .label=${this._localize("label.dynamic")}>
             <ha-switch
               .checked=${useDynamic}
               @change=${(ev) => this._updateConfig(`use_dynamic_${key}`, ev.target.checked)}
@@ -485,7 +490,7 @@ class FixedPeriodChartEditor extends LitElement {
                      }}>
               <span style="font-size: 12px; color: var(--secondary-text-color); width: 36px; text-align: right; flex-shrink: 0;">${Math.round(parsed.opacity * 100)}%</span>
             </div>
-            <input type="text" class="styled-input" .value=${colorVal} @input=${(ev) => this._updateConfig(key, ev.target.value)} placeholder="e.g. rgba(255,0,0,0.2)">
+            <input type="text" class="styled-input" .value=${colorVal} @input=${(ev) => this._updateConfig(key, ev.target.value)} placeholder=${this._localize("color.placeholder")}>
           </div>
         `}
       </div>
