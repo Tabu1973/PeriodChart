@@ -150,243 +150,308 @@ class FixedPeriodChartEditor extends LitElement {
       return html``;
     }
 
+    const useDynamicColors = this._force_dynamic_colors_open || !!this._config.color_entity || !!this._config.bg_color_entity || !!this._config.card_bg_color_entity;
+    const useDynamicLineWidth = this._force_dynamic_line_width_open || !!this._config.line_width_entity;
+
     return html`
       <div class="card-config">
-        <ha-entity-picker
-          .label=${"Entity (Sensor)"}
-          .hass=${this.hass}
-          .value=${this._entity}
-          @value-changed=${(ev) => this._updateConfig('entity', ev.detail.value)}
-          allow-custom-entity
-        ></ha-entity-picker>
-
-        <div class="side-by-side">
-          <div>
-            <span class="label">Period</span>
-            <select class="styled-select" @change=${(ev) => this._updateConfig('period', ev.target.value)}>
-              <option value="this_year" ?selected=${this._period === 'this_year'}>This Year</option>
-              <option value="last_year" ?selected=${this._period === 'last_year'}>Last Year</option>
-              <option value="this_month" ?selected=${this._period === 'this_month'}>This Month</option>
-              <option value="last_month" ?selected=${this._period === 'last_month'}>Last Month</option>
-              <option value="this_week" ?selected=${this._period === 'this_week'}>This Week</option>
-              <option value="last_week" ?selected=${this._period === 'last_week'}>Last Week</option>
-              <option value="today" ?selected=${this._period === 'today'}>Today</option>
-              <option value="yesterday" ?selected=${this._period === 'yesterday'}>Yesterday</option>
-              <option value="custom" ?selected=${this._period === 'custom'}>Custom (Entities/Picker)</option>
-            </select>
-          </div>
-
-          <div>
-            <span class="label">Resolution</span>
-            <select class="styled-select" @change=${(ev) => this._updateConfig('resolution', ev.target.value)}>
-              <option value="day" ?selected=${this._resolution === 'day'}>Day</option>
-              <option value="hour" ?selected=${this._resolution === 'hour'}>Hour</option>
-              <option value="5minute" ?selected=${this._resolution === '5minute'}>5 Minute</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="side-by-side">
-          <div>
-            <span class="label">Title (Optional)</span>
-            <input type="text" class="styled-input" .value=${this._title} @input=${(ev) => this._updateConfig('title', ev.target.value)}>
-          </div>
-          <div>
-            <span class="label">Legend Label (Optional)</span>
-            <input type="text" class="styled-input" .value=${this._legend_label} @input=${(ev) => this._updateConfig('legend_label', ev.target.value)}>
-          </div>
-        </div>
-
-        <div class="side-by-side">
-          ${this.renderColorPicker("Line/Border Color", "color")}
-          ${this.renderColorPicker("Chart Fill Color", "bg_color")}
-        </div>
-
-        <div class="side-by-side">
-          ${this.renderColorPicker("Card Background Color", "card_bg_color")}
+        
+        <div class="config-section">
+          <h3>1. Basic Settings</h3>
           <ha-entity-picker
-            .label=${"Card Background Entity (Optional)"}
+            .label=${"Entity (Sensor)"}
             .hass=${this.hass}
-            .value=${this._card_bg_color_entity}
-            @value-changed=${(ev) => this._updateConfig('card_bg_color_entity', ev.detail.value)}
-            allow-custom-entity
-          ></ha-entity-picker>
-        </div>
-
-        <div class="side-by-side">
-          <ha-entity-picker
-            .label=${"Period Entity (Optional)"}
-            .hass=${this.hass}
-            .value=${this._period_entity}
-            .includeDomains=${['input_select']}
-            @value-changed=${(ev) => this._updateConfig('period_entity', ev.detail.value)}
-            allow-custom-entity
-          ></ha-entity-picker>
-        </div>
-
-        <div class="side-by-side">
-          <ha-entity-picker
-            .label=${"Start Entity (Optional)"}
-            .hass=${this.hass}
-            .value=${this._start_entity}
-            .includeDomains=${['input_datetime']}
-            @value-changed=${(ev) => this._updateConfig('start_entity', ev.detail.value)}
+            .value=${this._entity}
+            @value-changed=${(ev) => this._updateConfig('entity', ev.detail.value)}
             allow-custom-entity
           ></ha-entity-picker>
 
-          <ha-entity-picker
-            .label=${"End Entity (Optional)"}
-            .hass=${this.hass}
-            .value=${this._end_entity}
-            .includeDomains=${['input_datetime']}
-            @value-changed=${(ev) => this._updateConfig('end_entity', ev.detail.value)}
-            allow-custom-entity
-          ></ha-entity-picker>
-        </div>
-
-        <div class="side-by-side">
-          <ha-entity-picker
-            .label=${"Resolution Entity (Optional)"}
-            .hass=${this.hass}
-            .value=${this._resolution_entity}
-            .includeDomains=${['input_select', 'input_text']}
-            @value-changed=${(ev) => this._updateConfig('resolution_entity', ev.detail.value)}
-            allow-custom-entity
-          ></ha-entity-picker>
-        </div>
-
-        <div class="side-by-side">
-          <ha-entity-picker
-            .label=${"Line Color Entity (Optional)"}
-            .hass=${this.hass}
-            .value=${this._color_entity}
-            @value-changed=${(ev) => this._updateConfig('color_entity', ev.detail.value)}
-            allow-custom-entity
-          ></ha-entity-picker>
-          <ha-entity-picker
-            .label=${"Fill Color Entity (Optional)"}
-            .hass=${this.hass}
-            .value=${this._bg_color_entity}
-            @value-changed=${(ev) => this._updateConfig('bg_color_entity', ev.detail.value)}
-            allow-custom-entity
-          ></ha-entity-picker>
-        </div>
-
-        <div class="side-by-side">
-          <ha-entity-picker
-            .label=${"Line Width Entity (Optional)"}
-            .hass=${this.hass}
-            .value=${this._line_width_entity}
-            .includeDomains=${['input_number', 'number']}
-            @value-changed=${(ev) => this._updateConfig('line_width_entity', ev.detail.value)}
-            allow-custom-entity
-          ></ha-entity-picker>
-          <div></div>
-        </div>
-
-        <div class="side-by-side">
-          <div>
-            <span class="label">Chart Type</span>
-            <select class="styled-select" @change=${(ev) => this._updateConfig('chart_type', ev.target.value)}>
-              <option value="bar" ?selected=${this._chart_type === 'bar'}>Bar</option>
-              <option value="line" ?selected=${this._chart_type === 'line'}>Line</option>
-            </select>
-          </div>
-          <div>
-            <span class="label">Line/Border Width (z.B. 2)</span>
-            <input type="number" class="styled-input" .value=${this._line_width} @input=${(ev) => this._updateConfig('line_width', ev.target.value)} placeholder="Auto">
+          <div class="side-by-side" style="margin-top: 16px;">
+            <div>
+              <span class="label">Title (Optional)</span>
+              <input type="text" class="styled-input" .value=${this._title} @input=${(ev) => this._updateConfig('title', ev.target.value)}>
+            </div>
+            <div>
+              <span class="label">Legend Label (Optional)</span>
+              <input type="text" class="styled-input" .value=${this._legend_label} @input=${(ev) => this._updateConfig('legend_label', ev.target.value)}>
+            </div>
           </div>
         </div>
 
-        <div class="side-by-side">
-          <ha-formfield .label=${"Show Date Picker"}>
-            <ha-switch
-              .checked=${this._show_date_picker !== false}
-              @change=${(ev) => this._updateConfig('show_date_picker', ev.target.checked)}
-            ></ha-switch>
-          </ha-formfield>
-          <ha-formfield .label=${"Show Legend"}>
-            <ha-switch
-              .checked=${this._show_legend !== false}
-              @change=${(ev) => this._updateConfig('show_legend', ev.target.checked)}
-            ></ha-switch>
-          </ha-formfield>
-        </div>
+        <div class="config-section">
+          <h3>2. Time & Resolution</h3>
+          <div class="side-by-side">
+            <div>
+              <span class="label">Period</span>
+              <select class="styled-select" @change=${(ev) => this._updateConfig('period', ev.target.value)}>
+                <option value="this_year" ?selected=${this._period === 'this_year'}>This Year</option>
+                <option value="last_year" ?selected=${this._period === 'last_year'}>Last Year</option>
+                <option value="this_month" ?selected=${this._period === 'this_month'}>This Month</option>
+                <option value="last_month" ?selected=${this._period === 'last_month'}>Last Month</option>
+                <option value="this_week" ?selected=${this._period === 'this_week'}>This Week</option>
+                <option value="last_week" ?selected=${this._period === 'last_week'}>Last Week</option>
+                <option value="today" ?selected=${this._period === 'today'}>Today</option>
+                <option value="yesterday" ?selected=${this._period === 'yesterday'}>Yesterday</option>
+                <option value="custom" ?selected=${this._period === 'custom'}>Custom (Entities/Picker)</option>
+              </select>
+            </div>
 
-        <div class="side-by-side">
-          <ha-formfield .label=${"Show Tooltips"}>
-            <ha-switch
-              .checked=${this._show_tooltip !== false}
-              @change=${(ev) => this._updateConfig('show_tooltip', ev.target.checked)}
-            ></ha-switch>
-          </ha-formfield>
-          <ha-formfield .label=${"Show Navigation Arrows"}>
-            <ha-switch
-              .checked=${this._show_navigation === true}
-              @change=${(ev) => this._updateConfig('show_navigation', ev.target.checked)}
-            ></ha-switch>
-          </ha-formfield>
-        </div>
-
-        <div class="side-by-side">
-          <ha-formfield .label=${"Smooth Lines"}>
-            <ha-switch
-              .checked=${this._smoothing === true}
-              @change=${(ev) => this._updateConfig('smoothing', ev.target.checked)}
-            ></ha-switch>
-          </ha-formfield>
-        </div>
-
-        <div class="side-by-side">
-          <ha-formfield .label=${"Show Data Points (Line Chart)"}>
-            <ha-switch
-              .checked=${this._show_data_points !== false}
-              @change=${(ev) => this._updateConfig('show_data_points', ev.target.checked)}
-            ></ha-switch>
-          </ha-formfield>
-          <div></div>
-        </div>
-
-        <div class="side-by-side">
-          <ha-formfield .label=${"Show X-Axis"}>
-            <ha-switch
-              .checked=${this._show_axis_x !== false}
-              @change=${(ev) => this._updateConfig('show_axis_x', ev.target.checked)}
-            ></ha-switch>
-          </ha-formfield>
-          <ha-formfield .label=${"Show Y-Axis"}>
-            <ha-switch
-              .checked=${this._show_axis_y !== false}
-              @change=${(ev) => this._updateConfig('show_axis_y', ev.target.checked)}
-            ></ha-switch>
-          </ha-formfield>
-        </div>
-
-        <div class="side-by-side">
-          <ha-formfield .label=${"Show X-Grid (Raster)"}>
-            <ha-switch
-              .checked=${this._show_grid_x !== false}
-              @change=${(ev) => this._updateConfig('show_grid_x', ev.target.checked)}
-            ></ha-switch>
-          </ha-formfield>
-          <ha-formfield .label=${"Show Y-Grid (Raster)"}>
-            <ha-switch
-              .checked=${this._show_grid_y !== false}
-              @change=${(ev) => this._updateConfig('show_grid_y', ev.target.checked)}
-            ></ha-switch>
-          </ha-formfield>
-        </div>
-
-        <div class="side-by-side">
-          <div>
-            <span class="label">Max Ticks X-Axis (z.B. 10)</span>
-            <input type="number" class="styled-input" .value=${this._max_ticks_x} @input=${(ev) => this._updateConfig('max_ticks_x', ev.target.value)} placeholder="Auto">
+            <div>
+              <span class="label">Resolution</span>
+              <select class="styled-select" @change=${(ev) => this._updateConfig('resolution', ev.target.value)}>
+                <option value="day" ?selected=${this._resolution === 'day'}>Day</option>
+                <option value="hour" ?selected=${this._resolution === 'hour'}>Hour</option>
+                <option value="5minute" ?selected=${this._resolution === '5minute'}>5 Minute</option>
+                <option value="custom" ?selected=${this._resolution === 'custom'}>Custom (Entity)</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <span class="label">Step Size Y-Axis (z.B. 5)</span>
-            <input type="number" class="styled-input" .value=${this._step_size_y} @input=${(ev) => this._updateConfig('step_size_y', ev.target.value)} placeholder="Auto">
+
+          ${this._period === 'custom' ? html`
+            <div class="side-by-side" style="margin-top: 16px;">
+              <ha-entity-picker
+                .label=${"Period Entity (Optional)"}
+                .hass=${this.hass}
+                .value=${this._period_entity}
+                .includeDomains=${['input_select']}
+                @value-changed=${(ev) => this._updateConfig('period_entity', ev.detail.value)}
+                allow-custom-entity
+              ></ha-entity-picker>
+            </div>
+            <div class="side-by-side" style="margin-top: 16px;">
+              <ha-entity-picker
+                .label=${"Start Entity (Optional)"}
+                .hass=${this.hass}
+                .value=${this._start_entity}
+                .includeDomains=${['input_datetime']}
+                @value-changed=${(ev) => this._updateConfig('start_entity', ev.detail.value)}
+                allow-custom-entity
+              ></ha-entity-picker>
+
+              <ha-entity-picker
+                .label=${"End Entity (Optional)"}
+                .hass=${this.hass}
+                .value=${this._end_entity}
+                .includeDomains=${['input_datetime']}
+                @value-changed=${(ev) => this._updateConfig('end_entity', ev.detail.value)}
+                allow-custom-entity
+              ></ha-entity-picker>
+            </div>
+          ` : ''}
+
+          ${this._resolution === 'custom' ? html`
+            <div class="side-by-side" style="margin-top: 16px;">
+              <ha-entity-picker
+                .label=${"Resolution Entity"}
+                .hass=${this.hass}
+                .value=${this._resolution_entity}
+                .includeDomains=${['input_select', 'input_text']}
+                @value-changed=${(ev) => this._updateConfig('resolution_entity', ev.detail.value)}
+                allow-custom-entity
+              ></ha-entity-picker>
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="config-section">
+          <h3>3. Chart Appearance</h3>
+          <div class="side-by-side">
+            <div>
+              <span class="label">Chart Type</span>
+              <select class="styled-select" @change=${(ev) => this._updateConfig('chart_type', ev.target.value)}>
+                <option value="bar" ?selected=${this._chart_type === 'bar'}>Bar</option>
+                <option value="line" ?selected=${this._chart_type === 'line'}>Line</option>
+              </select>
+            </div>
+            <div>
+              <span class="label">Line/Border Width (z.B. 2)</span>
+              <input type="number" class="styled-input" .value=${this._line_width} @input=${(ev) => this._updateConfig('line_width', ev.target.value)} placeholder="Auto">
+            </div>
+          </div>
+
+          ${this._chart_type === 'line' ? html`
+            <div class="side-by-side" style="margin-top: 16px;">
+              <ha-formfield .label=${"Smooth Lines"}>
+                <ha-switch
+                  .checked=${this._smoothing === true}
+                  @change=${(ev) => this._updateConfig('smoothing', ev.target.checked)}
+                ></ha-switch>
+              </ha-formfield>
+              <ha-formfield .label=${"Show Data Points"}>
+                <ha-switch
+                  .checked=${this._show_data_points !== false}
+                  @change=${(ev) => this._updateConfig('show_data_points', ev.target.checked)}
+                ></ha-switch>
+              </ha-formfield>
+            </div>
+          ` : ''}
+
+          <div style="margin-top: 16px;">
+            <ha-formfield .label=${"Use Dynamic Entity for Line Width"}>
+              <ha-switch
+                .checked=${useDynamicLineWidth}
+                @change=${(ev) => {
+                  if (ev.target.checked) {
+                    this._force_dynamic_line_width_open = true;
+                    this.requestUpdate();
+                  } else {
+                    this._force_dynamic_line_width_open = false;
+                    this._updateConfig('line_width_entity', '');
+                  }
+                }}
+              ></ha-switch>
+            </ha-formfield>
+          </div>
+
+          ${useDynamicLineWidth ? html`
+            <div class="side-by-side" style="margin-top: 16px;">
+              <ha-entity-picker
+                .label=${"Line Width Entity"}
+                .hass=${this.hass}
+                .value=${this._line_width_entity}
+                .includeDomains=${['input_number', 'number']}
+                @value-changed=${(ev) => this._updateConfig('line_width_entity', ev.detail.value)}
+                allow-custom-entity
+              ></ha-entity-picker>
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="config-section">
+          <h3>4. Colors</h3>
+          <div class="side-by-side">
+            ${this.renderColorPicker("Line/Border Color", "color")}
+            ${this.renderColorPicker("Chart Fill Color", "bg_color")}
+          </div>
+
+          <div class="side-by-side" style="margin-top: 16px;">
+            ${this.renderColorPicker("Card Background Color", "card_bg_color")}
+            <div></div>
+          </div>
+
+          <div style="margin-top: 16px;">
+            <ha-formfield .label=${"Use Dynamic Entities for Colors"}>
+              <ha-switch
+                .checked=${useDynamicColors}
+                @change=${(ev) => {
+                  if (ev.target.checked) {
+                    this._force_dynamic_colors_open = true;
+                    this.requestUpdate();
+                  } else {
+                    this._force_dynamic_colors_open = false;
+                    this._updateConfig('color_entity', '');
+                    this._updateConfig('bg_color_entity', '');
+                    this._updateConfig('card_bg_color_entity', '');
+                  }
+                }}
+              ></ha-switch>
+            </ha-formfield>
+          </div>
+
+          ${useDynamicColors ? html`
+            <div class="side-by-side" style="margin-top: 16px;">
+              <ha-entity-picker
+                .label=${"Line Color Entity"}
+                .hass=${this.hass}
+                .value=${this._color_entity}
+                @value-changed=${(ev) => this._updateConfig('color_entity', ev.detail.value)}
+                allow-custom-entity
+              ></ha-entity-picker>
+              <ha-entity-picker
+                .label=${"Fill Color Entity"}
+                .hass=${this.hass}
+                .value=${this._bg_color_entity}
+                @value-changed=${(ev) => this._updateConfig('bg_color_entity', ev.detail.value)}
+                allow-custom-entity
+              ></ha-entity-picker>
+            </div>
+            <div class="side-by-side" style="margin-top: 16px;">
+              <ha-entity-picker
+                .label=${"Card Background Entity"}
+                .hass=${this.hass}
+                .value=${this._card_bg_color_entity}
+                @value-changed=${(ev) => this._updateConfig('card_bg_color_entity', ev.detail.value)}
+                allow-custom-entity
+              ></ha-entity-picker>
+              <div></div>
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="config-section">
+          <h3>5. Display & Axes</h3>
+          <div class="side-by-side">
+            <ha-formfield .label=${"Show Date Picker"}>
+              <ha-switch
+                .checked=${this._show_date_picker !== false}
+                @change=${(ev) => this._updateConfig('show_date_picker', ev.target.checked)}
+              ></ha-switch>
+            </ha-formfield>
+            <ha-formfield .label=${"Show Navigation Arrows"}>
+              <ha-switch
+                .checked=${this._show_navigation === true}
+                @change=${(ev) => this._updateConfig('show_navigation', ev.target.checked)}
+              ></ha-switch>
+            </ha-formfield>
+          </div>
+
+          <div class="side-by-side" style="margin-top: 16px;">
+            <ha-formfield .label=${"Show Legend"}>
+              <ha-switch
+                .checked=${this._show_legend !== false}
+                @change=${(ev) => this._updateConfig('show_legend', ev.target.checked)}
+              ></ha-switch>
+            </ha-formfield>
+            <ha-formfield .label=${"Show Tooltips"}>
+              <ha-switch
+                .checked=${this._show_tooltip !== false}
+                @change=${(ev) => this._updateConfig('show_tooltip', ev.target.checked)}
+              ></ha-switch>
+            </ha-formfield>
+          </div>
+
+          <div class="side-by-side" style="margin-top: 16px;">
+            <ha-formfield .label=${"Show X-Axis"}>
+              <ha-switch
+                .checked=${this._show_axis_x !== false}
+                @change=${(ev) => this._updateConfig('show_axis_x', ev.target.checked)}
+              ></ha-switch>
+            </ha-formfield>
+            <ha-formfield .label=${"Show Y-Axis"}>
+              <ha-switch
+                .checked=${this._show_axis_y !== false}
+                @change=${(ev) => this._updateConfig('show_axis_y', ev.target.checked)}
+              ></ha-switch>
+            </ha-formfield>
+          </div>
+
+          <div class="side-by-side" style="margin-top: 16px;">
+            <ha-formfield .label=${"Show X-Grid (Raster)"}>
+              <ha-switch
+                .checked=${this._show_grid_x !== false}
+                @change=${(ev) => this._updateConfig('show_grid_x', ev.target.checked)}
+              ></ha-switch>
+            </ha-formfield>
+            <ha-formfield .label=${"Show Y-Grid (Raster)"}>
+              <ha-switch
+                .checked=${this._show_grid_y !== false}
+                @change=${(ev) => this._updateConfig('show_grid_y', ev.target.checked)}
+              ></ha-switch>
+            </ha-formfield>
+          </div>
+
+          <div class="side-by-side" style="margin-top: 16px;">
+            <div>
+              <span class="label">Max Ticks X-Axis (z.B. 10)</span>
+              <input type="number" class="styled-input" .value=${this._max_ticks_x} @input=${(ev) => this._updateConfig('max_ticks_x', ev.target.value)} placeholder="Auto">
+            </div>
+            <div>
+              <span class="label">Step Size Y-Axis (z.B. 5)</span>
+              <input type="number" class="styled-input" .value=${this._step_size_y} @input=${(ev) => this._updateConfig('step_size_y', ev.target.value)} placeholder="Auto">
+            </div>
           </div>
         </div>
+
       </div>
     `;
   }
@@ -483,6 +548,21 @@ class FixedPeriodChartEditor extends LitElement {
 
   static get styles() {
     return css`
+      .config-section {
+        border: 1px solid var(--divider-color, #e0e0e0);
+        border-radius: 8px;
+        padding: 16px;
+        background: var(--card-background-color, #fff);
+      }
+      .config-section h3 {
+        margin-top: 0;
+        margin-bottom: 16px;
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--primary-text-color);
+        border-bottom: 1px solid var(--divider-color, #e0e0e0);
+        padding-bottom: 8px;
+      }
       .card-config {
         display: flex;
         flex-direction: column;
