@@ -30,6 +30,8 @@ class FixedPeriodChartEditor extends LitElement {
   }
 
   get _period() {
+    if (this._config?.period === 'custom') return 'custom';
+    if (!this._config?.period && (this._config?.period_entity || this._config?.start_entity || this._config?.start)) return 'custom';
     return this._config?.period || 'this_year';
   }
 
