@@ -150,14 +150,13 @@ class FixedPeriodChartEditor extends LitElement {
       return html``;
     }
 
-    const useDynamicColors = this._force_dynamic_colors_open || !!this._config.color_entity || !!this._config.bg_color_entity || !!this._config.card_bg_color_entity;
     const useDynamicLineWidth = this._force_dynamic_line_width_open || !!this._config.line_width_entity;
 
     return html`
       <div class="card-config">
         
-        <div class="config-section">
-          <h3>1. Basic Settings</h3>
+        <details class="config-section" open>
+          <summary><h3>1. Basic Settings</h3></summary>
           <ha-entity-picker
             .label=${"Entity (Sensor)"}
             .hass=${this.hass}
@@ -176,10 +175,10 @@ class FixedPeriodChartEditor extends LitElement {
               <input type="text" class="styled-input" .value=${this._legend_label} @input=${(ev) => this._updateConfig('legend_label', ev.target.value)}>
             </div>
           </div>
-        </div>
+        </details>
 
-        <div class="config-section">
-          <h3>2. Time & Resolution</h3>
+        <details class="config-section" open>
+          <summary><h3>2. Time & Resolution</h3></summary>
           <div class="side-by-side">
             <div>
               <span class="label">Period</span>
@@ -251,10 +250,10 @@ class FixedPeriodChartEditor extends LitElement {
               ></ha-entity-picker>
             </div>
           ` : ''}
-        </div>
+        </details>
 
-        <div class="config-section">
-          <h3>3. Chart Appearance</h3>
+        <details class="config-section" open>
+          <summary><h3>3. Chart Appearance</h3></summary>
           <div class="side-by-side">
             <div>
               <span class="label">Chart Type</span>
@@ -315,71 +314,23 @@ class FixedPeriodChartEditor extends LitElement {
               ></ha-entity-picker>
             </div>
           ` : ''}
-        </div>
+        </details>
 
-        <div class="config-section">
-          <h3>4. Colors</h3>
+        <details class="config-section" open>
+          <summary><h3>4. Colors</h3></summary>
           <div class="side-by-side">
             ${this.renderColorPicker("Line/Border Color", "color")}
+          </div>
+          <div class="side-by-side" style="margin-top: 16px;">
             ${this.renderColorPicker("Chart Fill Color", "bg_color")}
           </div>
-
           <div class="side-by-side" style="margin-top: 16px;">
             ${this.renderColorPicker("Card Background Color", "card_bg_color")}
-            <div></div>
           </div>
+        </details>
 
-          <div style="margin-top: 16px;">
-            <ha-formfield .label=${"Use Dynamic Entities for Colors"}>
-              <ha-switch
-                .checked=${useDynamicColors}
-                @change=${(ev) => {
-                  if (ev.target.checked) {
-                    this._force_dynamic_colors_open = true;
-                    this.requestUpdate();
-                  } else {
-                    this._force_dynamic_colors_open = false;
-                    this._updateConfig('color_entity', '');
-                    this._updateConfig('bg_color_entity', '');
-                    this._updateConfig('card_bg_color_entity', '');
-                  }
-                }}
-              ></ha-switch>
-            </ha-formfield>
-          </div>
-
-          ${useDynamicColors ? html`
-            <div class="side-by-side" style="margin-top: 16px;">
-              <ha-entity-picker
-                .label=${"Line Color Entity"}
-                .hass=${this.hass}
-                .value=${this._color_entity}
-                @value-changed=${(ev) => this._updateConfig('color_entity', ev.detail.value)}
-                allow-custom-entity
-              ></ha-entity-picker>
-              <ha-entity-picker
-                .label=${"Fill Color Entity"}
-                .hass=${this.hass}
-                .value=${this._bg_color_entity}
-                @value-changed=${(ev) => this._updateConfig('bg_color_entity', ev.detail.value)}
-                allow-custom-entity
-              ></ha-entity-picker>
-            </div>
-            <div class="side-by-side" style="margin-top: 16px;">
-              <ha-entity-picker
-                .label=${"Card Background Entity"}
-                .hass=${this.hass}
-                .value=${this._card_bg_color_entity}
-                @value-changed=${(ev) => this._updateConfig('card_bg_color_entity', ev.detail.value)}
-                allow-custom-entity
-              ></ha-entity-picker>
-              <div></div>
-            </div>
-          ` : ''}
-        </div>
-
-        <div class="config-section">
-          <h3>5. Display & Axes</h3>
+        <details class="config-section" open>
+          <summary><h3>5. Display & Axes</h3></summary>
           <div class="side-by-side">
             <ha-formfield .label=${"Show Date Picker"}>
               <ha-switch
@@ -450,7 +401,7 @@ class FixedPeriodChartEditor extends LitElement {
               <input type="number" class="styled-input" .value=${this._step_size_y} @input=${(ev) => this._updateConfig('step_size_y', ev.target.value)} placeholder="Auto">
             </div>
           </div>
-        </div>
+        </details>
 
       </div>
     `;
@@ -493,31 +444,61 @@ class FixedPeriodChartEditor extends LitElement {
   renderColorPicker(label, key) {
     const colorVal = this[`_${key}`] || '';
     const parsed = this._parseColor(colorVal);
+    const entityKey = key + '_entity';
+    const entityVal = this[`_${entityKey}`] || '';
+    const useDynamic = this[`_force_dynamic_${key}_open`] || !!this._config?.[entityKey];
     
     return html`
-      <div>
-        <span class="label">${label}</span>
-        <div style="display: flex; gap: 8px; flex-direction: column;">
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <input type="color" style="height: 36px; width: 46px; padding: 0; cursor: pointer; border: 1px solid var(--divider-color); border-radius: 4px; flex-shrink: 0;" 
-                   .value=${parsed.hex} 
-                   @input=${(ev) => {
-                     const r = parseInt(ev.target.value.slice(1, 3), 16);
-                     const g = parseInt(ev.target.value.slice(3, 5), 16);
-                     const b = parseInt(ev.target.value.slice(5, 7), 16);
-                     this._updateConfig(key, `rgba(${r}, ${g}, ${b}, ${parsed.opacity})`);
-                   }}>
-            <input type="range" min="0" max="1" step="0.01" .value=${parsed.opacity} style="flex: 1; min-width: 60px;"
-                   @input=${(ev) => {
-                     const r = parseInt(parsed.hex.slice(1, 3), 16);
-                     const g = parseInt(parsed.hex.slice(3, 5), 16);
-                     const b = parseInt(parsed.hex.slice(5, 7), 16);
-                     this._updateConfig(key, `rgba(${r}, ${g}, ${b}, ${ev.target.value})`);
-                   }}>
-            <span style="font-size: 12px; color: var(--secondary-text-color); width: 36px; text-align: right; flex-shrink: 0;">${Math.round(parsed.opacity * 100)}%</span>
-          </div>
-          <input type="text" class="styled-input" .value=${colorVal} @input=${(ev) => this._updateConfig(key, ev.target.value)} placeholder="e.g. rgba(255,0,0,0.2)">
+      <div style="flex: 1;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span class="label" style="margin: 0;">${label}</span>
+          <ha-formfield .label=${"Dynamic"}>
+            <ha-switch
+              .checked=${useDynamic}
+              @change=${(ev) => {
+                if (ev.target.checked) {
+                  this[`_force_dynamic_${key}_open`] = true;
+                  this.requestUpdate();
+                } else {
+                  this[`_force_dynamic_${key}_open`] = false;
+                  this._updateConfig(entityKey, '');
+                }
+              }}
+            ></ha-switch>
+          </ha-formfield>
         </div>
+        
+        ${useDynamic ? html`
+          <ha-entity-picker
+            .label=${label + " Entity"}
+            .hass=${this.hass}
+            .value=${entityVal}
+            @value-changed=${(ev) => this._updateConfig(entityKey, ev.detail.value)}
+            allow-custom-entity
+          ></ha-entity-picker>
+        ` : html`
+          <div style="display: flex; gap: 8px; flex-direction: column;">
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="color" style="height: 36px; width: 46px; padding: 0; cursor: pointer; border: 1px solid var(--divider-color); border-radius: 4px; flex-shrink: 0;" 
+                     .value=${parsed.hex} 
+                     @input=${(ev) => {
+                       const r = parseInt(ev.target.value.slice(1, 3), 16);
+                       const g = parseInt(ev.target.value.slice(3, 5), 16);
+                       const b = parseInt(ev.target.value.slice(5, 7), 16);
+                       this._updateConfig(key, `rgba(${r}, ${g}, ${b}, ${parsed.opacity})`);
+                     }}>
+              <input type="range" min="0" max="1" step="0.01" .value=${parsed.opacity} style="flex: 1; min-width: 60px;"
+                     @input=${(ev) => {
+                       const r = parseInt(parsed.hex.slice(1, 3), 16);
+                       const g = parseInt(parsed.hex.slice(3, 5), 16);
+                       const b = parseInt(parsed.hex.slice(5, 7), 16);
+                       this._updateConfig(key, `rgba(${r}, ${g}, ${b}, ${ev.target.value})`);
+                     }}>
+              <span style="font-size: 12px; color: var(--secondary-text-color); width: 36px; text-align: right; flex-shrink: 0;">${Math.round(parsed.opacity * 100)}%</span>
+            </div>
+            <input type="text" class="styled-input" .value=${colorVal} @input=${(ev) => this._updateConfig(key, ev.target.value)} placeholder="e.g. rgba(255,0,0,0.2)">
+          </div>
+        `}
       </div>
     `;
   }
@@ -553,6 +534,35 @@ class FixedPeriodChartEditor extends LitElement {
         border-radius: 8px;
         padding: 16px;
         background: var(--card-background-color, #fff);
+      }
+      details.config-section summary {
+        cursor: pointer;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        outline: none;
+      }
+      details.config-section summary h3 {
+        margin-top: 0;
+        margin-bottom: 0;
+        flex: 1;
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--primary-text-color);
+      }
+      details.config-section summary::after {
+        content: "▼";
+        font-size: 12px;
+        color: var(--secondary-text-color);
+        transition: transform 0.2s;
+      }
+      details[open].config-section summary::after {
+        transform: rotate(180deg);
+      }
+      details[open].config-section summary {
+        margin-bottom: 16px;
+        border-bottom: 1px solid var(--divider-color, #e0e0e0);
+        padding-bottom: 8px;
       }
       .config-section h3 {
         margin-top: 0;
