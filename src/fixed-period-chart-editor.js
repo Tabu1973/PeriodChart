@@ -179,7 +179,7 @@ class FixedPeriodChartEditor extends LitElement {
           </div>
         </details>
 
-        <details class="config-section" open>
+        <details class="config-section">
           <summary><h3>2. Time & Resolution</h3></summary>
           <div class="side-by-side">
             <div>
@@ -209,6 +209,9 @@ class FixedPeriodChartEditor extends LitElement {
           </div>
 
           ${this._period === 'custom' ? html`
+            <div style="margin-top: 16px; padding: 8px; background-color: var(--secondary-background-color); border-radius: 4px; font-size: 12px; color: var(--secondary-text-color);">
+              <strong>Note on Custom Period:</strong> If you specify <em>Start/End</em> entities, they will take precedence over the <em>Period</em> entity. Fill out only the ones you want to use.
+            </div>
             <div class="side-by-side" style="margin-top: 16px;">
               <ha-entity-picker
                 .label=${"Period Entity (Optional)"}
@@ -310,7 +313,7 @@ class FixedPeriodChartEditor extends LitElement {
           ` : ''}
         </details>
 
-        <details class="config-section" open>
+        <details class="config-section">
           <summary><h3>4. Colors</h3></summary>
           <div class="side-by-side">
             ${this.renderColorPicker("Line/Border Color", "color")}
@@ -323,7 +326,7 @@ class FixedPeriodChartEditor extends LitElement {
           </div>
         </details>
 
-        <details class="config-section" open>
+        <details class="config-section">
           <summary><h3>5. Display & Axes</h3></summary>
           <div class="side-by-side">
             <ha-formfield .label=${"Show Date Picker"}>
