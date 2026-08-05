@@ -28,6 +28,7 @@ const translations = {
     "resolution.5minute": "5 Minute",
     "resolution.custom": "Custom (Entity)",
     
+    "note.conflict": "Conflict: You have selected a fixed period, so your configured custom entities are currently ignored. Change the dropdown to 'Custom' to use them.",
     "label.use_start_end_entities": "Use Start/End Entities",
     "label.use_period_entity": "Use Period Entity",
     
@@ -96,6 +97,7 @@ const translations = {
     "resolution.5minute": "5 Minuten",
     "resolution.custom": "Benutzerdefiniert (Entität)",
     
+    "note.conflict": "Konflikt: Du hast einen festen Zeitraum ausgewählt, daher werden deine konfigurierten Entitäten ignoriert. Stelle das Dropdown auf 'Benutzerdefiniert', um sie zu nutzen.",
     "label.use_start_end_entities": "Start-/End-Entitäten nutzen",
     "label.use_period_entity": "Zeitraum-Entität nutzen",
     

@@ -201,6 +201,11 @@ class FixedPeriodChartEditor extends LitElement {
                 <option value="yesterday" ?selected=${this._period === 'yesterday'}>${this._localize("period.yesterday")}</option>
                 <option value="custom" ?selected=${this._period === 'custom'}>${this._localize("period.custom")}</option>
               </select>
+            ${this._period !== 'custom' && (this._config.use_period_entity || this._config.use_start_end_entities) ? html`
+              <div style="margin-top: 8px; padding: 8px; background-color: var(--warning-color, #ff9800); border-radius: 4px; font-size: 12px; color: #fff;">
+                ${this._localize("note.conflict")}
+              </div>
+            ` : ''}
             </div>
 
             <div>
