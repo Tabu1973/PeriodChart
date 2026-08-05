@@ -127,6 +127,10 @@ class FixedPeriodChart extends LitElement {
       console.log(`[FixedPeriodChart] Fetching data from ${start.toISOString()} to ${end.toISOString()}`);
       
       let resolution = this.config.resolution || 'day';
+      if (this.config.resolution_entity && this.hass.states[this.config.resolution_entity]) {
+        resolution = this.hass.states[this.config.resolution_entity].state;
+      }
+      
       const daysSinceStart = (new Date().getTime() - start.getTime()) / (1000 * 3600 * 24);
       if (resolution === '5minute' && daysSinceStart > 7) {
         resolution = 'hour';
@@ -181,6 +185,22 @@ class FixedPeriodChart extends LitElement {
       this.chart = null;
     }
 
+    // Resolve dynamic entities
+    let color = this.config.color;
+    if (this.config.color_entity && this.hass.states[this.config.color_entity]) {
+      color = this.hass.states[this.config.color_entity].state;
+    }
+
+    let bg_color = this.config.bg_color;
+    if (this.config.bg_color_entity && this.hass.states[this.config.bg_color_entity]) {
+      bg_color = this.hass.states[this.config.bg_color_entity].state;
+    }
+
+    let line_width = this.config.line_width;
+    if (this.config.line_width_entity && this.hass.states[this.config.line_width_entity]) {
+      line_width = this.hass.states[this.config.line_width_entity].state;
+    }
+
     this.chart = new Chart(canvas, {
       type: this.config.chart_type || 'bar',
       data: {
@@ -188,11 +208,11 @@ class FixedPeriodChart extends LitElement {
         datasets: [{
           label: this.config.legend_label || this.config.entity,
           data: this.chartData,
-          backgroundColor: this.config.bg_color || this.config.color || 'rgba(54, 162, 235, 0.5)',
-          borderColor: this.config.color || 'rgba(54, 162, 235, 1)',
-          borderWidth: this.config.line_width ? Number(this.config.line_width) : (this.config.chart_type === 'line' ? 2 : 1),
+          backgroundColor: bg_color || color || 'rgba(54, 162, 235, 0.5)',
+          borderColor: color || 'rgba(54, 162, 235, 1)',
+          borderWidth: line_width ? Number(line_width) : (this.config.chart_type === 'line' ? 2 : 1),
           tension: this.config.smoothing ? 0.4 : 0,
-          fill: !!this.config.bg_color, // Fill if background color is set, useful for line charts
+          fill: !!bg_color, // Fill if background color is set, useful for line charts
           pointRadius: this.config.show_data_points === false ? 0 : 3,
           pointHoverRadius: this.config.show_data_points === false ? 5 : 4
         }]

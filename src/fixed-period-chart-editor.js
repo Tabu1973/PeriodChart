@@ -125,6 +125,22 @@ class FixedPeriodChartEditor extends LitElement {
     return this._config?.end_entity || '';
   }
 
+  get _resolution_entity() {
+    return this._config?.resolution_entity || '';
+  }
+
+  get _color_entity() {
+    return this._config?.color_entity || '';
+  }
+
+  get _bg_color_entity() {
+    return this._config?.bg_color_entity || '';
+  }
+
+  get _line_width_entity() {
+    return this._config?.line_width_entity || '';
+  }
+
   render() {
     if (!this.hass || !this._config) {
       return html``;
@@ -216,6 +232,46 @@ class FixedPeriodChartEditor extends LitElement {
             @value-changed=${(ev) => this._updateConfig('end_entity', ev.detail.value)}
             allow-custom-entity
           ></ha-entity-picker>
+        </div>
+
+        <div class="side-by-side">
+          <ha-entity-picker
+            .label=${"Resolution Entity (Optional)"}
+            .hass=${this.hass}
+            .value=${this._resolution_entity}
+            .includeDomains=${['input_select', 'input_text']}
+            @value-changed=${(ev) => this._updateConfig('resolution_entity', ev.detail.value)}
+            allow-custom-entity
+          ></ha-entity-picker>
+        </div>
+
+        <div class="side-by-side">
+          <ha-entity-picker
+            .label=${"Line Color Entity (Optional)"}
+            .hass=${this.hass}
+            .value=${this._color_entity}
+            @value-changed=${(ev) => this._updateConfig('color_entity', ev.detail.value)}
+            allow-custom-entity
+          ></ha-entity-picker>
+          <ha-entity-picker
+            .label=${"Fill Color Entity (Optional)"}
+            .hass=${this.hass}
+            .value=${this._bg_color_entity}
+            @value-changed=${(ev) => this._updateConfig('bg_color_entity', ev.detail.value)}
+            allow-custom-entity
+          ></ha-entity-picker>
+        </div>
+
+        <div class="side-by-side">
+          <ha-entity-picker
+            .label=${"Line Width Entity (Optional)"}
+            .hass=${this.hass}
+            .value=${this._line_width_entity}
+            .includeDomains=${['input_number', 'number']}
+            @value-changed=${(ev) => this._updateConfig('line_width_entity', ev.detail.value)}
+            allow-custom-entity
+          ></ha-entity-picker>
+          <div></div>
         </div>
 
         <div class="side-by-side">
