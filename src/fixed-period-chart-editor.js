@@ -215,11 +215,9 @@ class FixedPeriodChartEditor extends LitElement {
           </div>
 
           ${this._period === 'custom' ? html`
-            ${this._config.use_period_entity && this._config.use_start_end_entities ? html`
-              <div style="margin-top: 16px; padding: 8px; background-color: var(--secondary-background-color); border-radius: 4px; font-size: 12px; color: var(--secondary-text-color);">
+            <div style="margin-top: 16px; padding: 8px; background-color: var(--secondary-background-color); border-radius: 4px; font-size: 12px; color: var(--secondary-text-color);">
                 <strong>${this._localize("note.custom_period")}</strong> 
               </div>
-            ` : ''}
             <div class="side-by-side" style="margin-top: 16px;">
               <ha-formfield .label=${this._localize("label.use_period_entity")}>
                 <ha-switch
