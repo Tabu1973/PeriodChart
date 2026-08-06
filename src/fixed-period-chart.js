@@ -161,11 +161,19 @@ class FixedPeriodChart extends LitElement {
     }
 
     if (start && end) {
-      if (this._currentStart?.getTime() !== start.getTime() || this._currentEnd?.getTime() !== end.getTime() || this._currentResolution !== resolution || this._entitiesHash !== JSON.stringify(entities.map(e => e.entity))) {
+      const startChanged = this._currentStart?.getTime() !== start.getTime();
+      const endChanged = this._currentEnd?.getTime() !== end.getTime();
+      const resChanged = this._currentResolution !== resolution;
+      
+      const currentHash = JSON.stringify(entities.map(e => e.entity));
+      const hashChanged = this._entitiesHash !== currentHash;
+
+      if (startChanged || endChanged || resChanged || hashChanged) {
+        console.log(`[FixedPeriodChart] Fetching because: startChanged=${startChanged}, endChanged=${endChanged}, resChanged=${resChanged}, hashChanged=${hashChanged}. OldHash: ${this._entitiesHash}, NewHash: ${currentHash}`);
         this._currentStart = start;
         this._currentEnd = end;
         this._currentResolution = resolution;
-        this._entitiesHash = JSON.stringify(entities.map(e => e.entity));
+        this._entitiesHash = currentHash;
         await this.fetchData(start, end, resolution);
       } else if (visualConfigChanged && this.chartDatasets.length > 0) {
         this.renderChart();
