@@ -218,10 +218,14 @@ class FixedPeriodChartEditor extends LitElement {
     const entities = [...this._entities];
     
     // Check if the value actually changed to prevent infinite loops in the editor
-    const currentValue = entities[index][key] !== undefined ? entities[index][key] : '';
-    if (currentValue === value) {
+    const normCurrent = entities[index][key] !== undefined ? entities[index][key] : '';
+    const normValue = value !== undefined ? value : '';
+    
+    if (normCurrent === normValue) {
       return;
     }
+    
+    console.log(`[FixedPeriodChartEditor] _updateEntityConfig FIRED! index=${index}, key=${key}, oldValue=${normCurrent}, newValue=${normValue}`);
     
     if (value === '' || value === undefined) {
       delete entities[index][key];
@@ -719,10 +723,14 @@ class FixedPeriodChartEditor extends LitElement {
       return;
     }
     
-    const currentValue = this._config[key] !== undefined ? this._config[key] : '';
-    if (currentValue === value || (key.startsWith('_') && this[`_${key}`] === value)) {
+    const normCurrent = this._config[key] !== undefined ? this._config[key] : '';
+    const normValue = value !== undefined ? value : '';
+    
+    if (normCurrent === normValue || (key.startsWith('_') && this[`_${key}`] === value)) {
       return;
     }
+
+    console.log(`[FixedPeriodChartEditor] _updateConfig FIRED! key=${key}, oldValue=${normCurrent}, newValue=${normValue}`);
 
     if (value === '' || value === undefined) {
       const tmpConfig = { ...this._config };
