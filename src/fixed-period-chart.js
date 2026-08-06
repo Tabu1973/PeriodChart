@@ -7,7 +7,7 @@ class FixedPeriodChart extends LitElement {
     return {
       hass: { type: Object },
       config: { type: Object },
-      chartData: { type: Array },
+      chartDatasets: { type: Array },
       _isLoading: { type: Boolean, state: true },
       _timeOffset: { type: Number, state: true },
     };
@@ -15,16 +15,38 @@ class FixedPeriodChart extends LitElement {
 
   constructor() {
     super();
-    this.chartData = [];
+    this.chartDatasets = [];
     this.chartLabels = [];
     this.chart = null;
     this._isLoading = false;
     this._timeOffset = 0;
   }
 
+  get _entities() {
+    if (this.config?.entities && Array.isArray(this.config.entities)) {
+      return this.config.entities;
+    }
+    if (this.config?.entity) {
+      return [{
+        entity: this.config.entity,
+        legend_label: this.config.legend_label,
+        color: this.config.color,
+        color_entity: this.config.color_entity,
+        use_dynamic_color: this.config.use_dynamic_color,
+        chart_type: this.config.chart_type,
+        line_width: this.config.line_width,
+        line_width_entity: this.config.line_width_entity,
+        use_dynamic_line_width: this.config.use_dynamic_line_width,
+        smoothing: this.config.smoothing,
+        show_data_points: this.config.show_data_points
+      }];
+    }
+    return [];
+  }
+
   setConfig(config) {
-    if (!config.entity) {
-      throw new Error('You need to define an entity');
+    if (!config.entities && !config.entity) {
+      throw new Error('You need to define at least one entity');
     }
     this.config = config;
   }
@@ -35,10 +57,9 @@ class FixedPeriodChart extends LitElement {
 
   static getStubConfig() {
     return {
-      entity: '',
+      entities: [{ entity: '' }],
       period: 'this_year',
       resolution: 'day',
-      chart_type: 'bar',
       show_date_picker: false
     };
   }
@@ -56,9 +77,7 @@ class FixedPeriodChart extends LitElement {
   async updateDatesAndFetch() {
     let start, end;
     
-    // Determine if we are using a custom period configuration
     const isCustom = this.config.period === 'custom' || (!this.config.period && (this.config.period_entity || this.config.start_entity || this.config.start));
-    
     let periodToUse = this.config.period || 'this_year';
     
     if (isCustom) {
@@ -77,7 +96,6 @@ class FixedPeriodChart extends LitElement {
         start = new Date(this.config.start);
         end = new Date(this.config.end);
       } else {
-        // Fallback to period_entity if start/end not provided
         periodToUse = 'this_year';
         if (this.config.use_period_entity && this.config.period_entity && this.hass.states[this.config.period_entity]) {
           periodToUse = this.hass.states[this.config.period_entity].state;
@@ -87,34 +105,34 @@ class FixedPeriodChart extends LitElement {
 
     if (!start && !end && periodToUse && periodToUse !== 'custom') {
       const now = new Date();
-        if (periodToUse === 'this_year') {
-          start = new Date(now.getFullYear() + this._timeOffset, 0, 1);
-          end = new Date(now.getFullYear() + this._timeOffset, 11, 31, 23, 59, 59);
-        } else if (periodToUse === 'last_year') {
-          start = new Date(now.getFullYear() - 1 + this._timeOffset, 0, 1);
-          end = new Date(now.getFullYear() - 1 + this._timeOffset, 11, 31, 23, 59, 59);
-        } else if (periodToUse === 'this_month') {
-          start = new Date(now.getFullYear(), now.getMonth() + this._timeOffset, 1);
-          end = new Date(now.getFullYear(), now.getMonth() + 1 + this._timeOffset, 0, 23, 59, 59);
-        } else if (periodToUse === 'last_month') {
-          start = new Date(now.getFullYear(), now.getMonth() - 1 + this._timeOffset, 1);
-          end = new Date(now.getFullYear(), now.getMonth() + this._timeOffset, 0, 23, 59, 59);
-        } else if (periodToUse === 'this_week') {
-          const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
-          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + 1 + (this._timeOffset * 7));
-          end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + 7 + (this._timeOffset * 7), 23, 59, 59);
-        } else if (periodToUse === 'last_week') {
-          const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
-          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek - 6 + (this._timeOffset * 7));
-          end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + (this._timeOffset * 7), 23, 59, 59);
-        } else if (periodToUse === 'today') {
-          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() + this._timeOffset);
-          end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + this._timeOffset, 23, 59, 59);
-        } else if (periodToUse === 'yesterday') {
-          start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1 + this._timeOffset);
-          end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1 + this._timeOffset, 23, 59, 59);
-        }
+      if (periodToUse === 'this_year') {
+        start = new Date(now.getFullYear() + this._timeOffset, 0, 1);
+        end = new Date(now.getFullYear() + this._timeOffset, 11, 31, 23, 59, 59);
+      } else if (periodToUse === 'last_year') {
+        start = new Date(now.getFullYear() - 1 + this._timeOffset, 0, 1);
+        end = new Date(now.getFullYear() - 1 + this._timeOffset, 11, 31, 23, 59, 59);
+      } else if (periodToUse === 'this_month') {
+        start = new Date(now.getFullYear(), now.getMonth() + this._timeOffset, 1);
+        end = new Date(now.getFullYear(), now.getMonth() + 1 + this._timeOffset, 0, 23, 59, 59);
+      } else if (periodToUse === 'last_month') {
+        start = new Date(now.getFullYear(), now.getMonth() - 1 + this._timeOffset, 1);
+        end = new Date(now.getFullYear(), now.getMonth() + this._timeOffset, 0, 23, 59, 59);
+      } else if (periodToUse === 'this_week') {
+        const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + 1 + (this._timeOffset * 7));
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + 7 + (this._timeOffset * 7), 23, 59, 59);
+      } else if (periodToUse === 'last_week') {
+        const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek - 6 + (this._timeOffset * 7));
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek + (this._timeOffset * 7), 23, 59, 59);
+      } else if (periodToUse === 'today') {
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate() + this._timeOffset);
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + this._timeOffset, 23, 59, 59);
+      } else if (periodToUse === 'yesterday') {
+        start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1 + this._timeOffset);
+        end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1 + this._timeOffset, 23, 59, 59);
       }
+    }
 
     let resolution = this.config.resolution || 'day';
     if (this.config.resolution_entity && this.hass.states[this.config.resolution_entity]) {
@@ -122,15 +140,7 @@ class FixedPeriodChart extends LitElement {
     }
 
     let visualConfigChanged = false;
-    let color = this.config.color;
-    if (this.config.use_dynamic_color && this.config.color_entity && this.hass.states[this.config.color_entity]) {
-      color = this.hass.states[this.config.color_entity].state;
-    }
-    if (this._currentColor !== color) {
-      this._currentColor = color;
-      visualConfigChanged = true;
-    }
-
+    // Check global colors
     let bg_color = this.config.bg_color;
     if (this.config.use_dynamic_bg_color && this.config.bg_color_entity && this.hass.states[this.config.bg_color_entity]) {
       bg_color = this.hass.states[this.config.bg_color_entity].state;
@@ -140,23 +150,35 @@ class FixedPeriodChart extends LitElement {
       visualConfigChanged = true;
     }
 
-    let line_width = this.config.line_width;
-    if (this.config.use_dynamic_line_width && this.config.line_width_entity && this.hass.states[this.config.line_width_entity]) {
-      line_width = this.hass.states[this.config.line_width_entity].state;
+    let card_bg_color = this.config.card_bg_color;
+    if (this.config.use_dynamic_card_bg_color && this.config.card_bg_color_entity && this.hass.states[this.config.card_bg_color_entity]) {
+      card_bg_color = this.hass.states[this.config.card_bg_color_entity].state;
     }
-    if (this._currentLineWidth !== line_width) {
-      this._currentLineWidth = line_width;
+    if (this._currentCardBgColor !== card_bg_color) {
+      this._currentCardBgColor = card_bg_color;
+      visualConfigChanged = true;
+    }
+    
+    // Evaluate if entity colors changed
+    const entities = this._entities;
+    const currentEntityStyles = JSON.stringify(entities.map(e => ({
+      color: e.use_dynamic_color && e.color_entity && this.hass.states[e.color_entity] ? this.hass.states[e.color_entity].state : e.color,
+      width: e.use_dynamic_line_width && e.line_width_entity && this.hass.states[e.line_width_entity] ? this.hass.states[e.line_width_entity].state : e.line_width
+    })));
+
+    if (this._currentEntityStyles !== currentEntityStyles) {
+      this._currentEntityStyles = currentEntityStyles;
       visualConfigChanged = true;
     }
 
     if (start && end) {
-      // Check if dates or resolution actually changed to avoid infinite loops when hass updates
-      if (this._currentStart?.getTime() !== start.getTime() || this._currentEnd?.getTime() !== end.getTime() || this._currentResolution !== resolution) {
+      if (this._currentStart?.getTime() !== start.getTime() || this._currentEnd?.getTime() !== end.getTime() || this._currentResolution !== resolution || this._entitiesHash !== JSON.stringify(entities.map(e => e.entity))) {
         this._currentStart = start;
         this._currentEnd = end;
         this._currentResolution = resolution;
+        this._entitiesHash = JSON.stringify(entities.map(e => e.entity));
         await this.fetchData(start, end, resolution);
-      } else if (visualConfigChanged && this.chartData.length > 0) {
+      } else if (visualConfigChanged && this.chartDatasets.length > 0) {
         this.renderChart();
       }
     }
@@ -165,40 +187,63 @@ class FixedPeriodChart extends LitElement {
   async fetchData(start, end, resolution) {
     try {
       this._isLoading = true;
-      this.chartData = []; 
-      this.requestUpdate(); // Force UI to show loading state
+      this.chartDatasets = []; 
+      this.requestUpdate(); 
       
-      console.log(`[FixedPeriodChart] Fetching data from ${start.toISOString()} to ${end.toISOString()}`);
+      const entities = this._entities;
+      const validEntities = entities.map(e => e.entity).filter(e => e);
+      if (validEntities.length === 0) {
+        this._isLoading = false;
+        this.requestUpdate();
+        return;
+      }
+
+      console.log(`[FixedPeriodChart] Fetching data from ${start.toISOString()} to ${end.toISOString()} for ${validEntities.length} entities`);
       
       const daysSinceStart = (new Date().getTime() - start.getTime()) / (1000 * 3600 * 24);
       if (resolution === '5minute' && daysSinceStart > 7) {
         resolution = 'hour';
-        console.log('[FixedPeriodChart] Auto-switched resolution from 5minute to hour due to historical data limits');
       }
 
       const response = await this.hass.callWS({
         type: 'recorder/statistics_during_period',
         start_time: start.toISOString(),
         end_time: end.toISOString(),
-        statistic_ids: [this.config.entity],
+        statistic_ids: validEntities,
         period: resolution
       });
 
-      const data = response[this.config.entity] || [];
-      console.log(`[FixedPeriodChart] Received ${data.length} data points.`);
+      const allTimestamps = new Set();
+      const entityData = {};
+
+      validEntities.forEach(entityId => {
+        const data = response[entityId] || [];
+        entityData[entityId] = data.map(point => {
+          allTimestamps.add(point.start);
+          return {
+            start: point.start,
+            value: point.state !== undefined ? point.state : (point.mean !== undefined ? point.mean : point.sum)
+          };
+        });
+      });
+
+      const sortedTimestamps = Array.from(allTimestamps).sort((a, b) => a - b);
       
-      // Map data for Chart.js
-      this.chartLabels = data.map(point => {
-        const d = new Date(point.start);
+      this.chartLabels = sortedTimestamps.map(ts => {
+        const d = new Date(ts);
         return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
       });
-      this.chartData = data.map(point => point.state !== undefined ? point.state : (point.mean !== undefined ? point.mean : point.sum));
+
+      this.chartDatasets = entities.map(ent => {
+        if (!ent.entity || !entityData[ent.entity]) return [];
+        const dataMap = new Map(entityData[ent.entity].map(d => [d.start, d.value]));
+        return sortedTimestamps.map(ts => dataMap.has(ts) ? dataMap.get(ts) : null);
+      });
       
       this._isLoading = false;
       this.requestUpdate();
 
-      if (this.chartData.length > 0) {
-        // Wait for next render cycle so the #chart div exists
+      if (this.chartDatasets.length > 0) {
         setTimeout(() => this.renderChart(), 0);
       }
     } catch (error) {
@@ -218,63 +263,76 @@ class FixedPeriodChart extends LitElement {
       chartContainer.appendChild(canvas);
     }
 
-    // Force complete destruction and recreation of the chart to prevent any context issues
     if (this.chart) {
       this.chart.destroy();
       this.chart = null;
     }
 
-    // Resolve dynamic entities
-    let color = this.config.color;
-    if (this.config.use_dynamic_color && this.config.color_entity && this.hass.states[this.config.color_entity]) {
-      color = this.hass.states[this.config.color_entity].state;
-    }
+    const entities = this._entities;
+    const datasets = entities.map((ent, idx) => {
+      let color = ent.color;
+      if (ent.use_dynamic_color && ent.color_entity && this.hass.states[ent.color_entity]) {
+        color = this.hass.states[ent.color_entity].state;
+      }
 
-    let bg_color = this.config.bg_color;
-    if (this.config.use_dynamic_bg_color && this.config.bg_color_entity && this.hass.states[this.config.bg_color_entity]) {
-      bg_color = this.hass.states[this.config.bg_color_entity].state;
-    }
+      let line_width = ent.line_width;
+      if (ent.use_dynamic_line_width && ent.line_width_entity && this.hass.states[ent.line_width_entity]) {
+        line_width = this.hass.states[ent.line_width_entity].state;
+      }
 
-    let line_width = this.config.line_width;
-    if (this.config.use_dynamic_line_width && this.config.line_width_entity && this.hass.states[this.config.line_width_entity]) {
-      line_width = this.hass.states[this.config.line_width_entity].state;
-    }
+      return {
+        label: ent.legend_label || ent.entity,
+        data: this.chartDatasets[idx] || [],
+        backgroundColor: color || 'rgba(54, 162, 235, 0.5)',
+        borderColor: color || 'rgba(54, 162, 235, 1)',
+        borderWidth: line_width ? Number(line_width) : (ent.chart_type === 'line' ? 2 : 1),
+        tension: ent.smoothing ? 0.4 : 0,
+        fill: ent.chart_type === 'line' ? (!!this._currentBgColor) : true, 
+        pointRadius: ent.show_data_points === false ? 0 : 3,
+        pointHoverRadius: ent.show_data_points === false ? 5 : 4,
+        type: ent.chart_type || 'bar'
+      };
+    });
 
-            let categoryScale = {
-          display: this.config.show_x_axis !== false,
-          grid: { display: this.config.show_x_grid !== false },
-          ticks: { maxTicksLimit: this.config.max_ticks_x ? Number(this.config.max_ticks_x) : undefined }
-        };
-        let valueScale = {
-          display: this.config.show_y_axis !== false,
-          grid: { display: this.config.show_y_grid !== false },
-          ticks: {
-            stepSize: this.config.step_size_y ? Number(this.config.step_size_y) : undefined
-          }
-        };
-        let chartScales = this.config.horizontal ? { x: valueScale, y: categoryScale } : { x: categoryScale, y: valueScale };
+    let categoryScale = {
+      display: this.config.show_x_axis !== false,
+      grid: { display: this.config.show_x_grid !== false },
+      ticks: { maxTicksLimit: this.config.max_ticks_x ? Number(this.config.max_ticks_x) : undefined }
+    };
+    let valueScale = {
+      display: this.config.show_y_axis !== false,
+      grid: { display: this.config.show_y_grid !== false },
+      ticks: {
+        stepSize: this.config.step_size_y ? Number(this.config.step_size_y) : undefined
+      }
+    };
+    let chartScales = this.config.horizontal ? { x: valueScale, y: categoryScale } : { x: categoryScale, y: valueScale };
 
-      this.chart = new Chart(canvas, {
-      type: this.config.chart_type || 'bar',
+    // Plugin for custom background color
+    const customBgPlugin = {
+      id: 'customCanvasBackgroundColor',
+      beforeDraw: (chart) => {
+        if (this._currentBgColor) {
+          const ctx = chart.canvas.getContext('2d');
+          ctx.save();
+          ctx.globalCompositeOperation = 'destination-over';
+          ctx.fillStyle = this._currentBgColor;
+          ctx.fillRect(0, 0, chart.width, chart.height);
+          ctx.restore();
+        }
+      }
+    };
+
+    this.chart = new Chart(canvas, {
       data: {
         labels: this.chartLabels,
-        datasets: [{
-          label: this.config.legend_label || this.config.entity,
-          data: this.chartData,
-          backgroundColor: bg_color || color || 'rgba(54, 162, 235, 0.5)',
-          borderColor: color || 'rgba(54, 162, 235, 1)',
-          borderWidth: line_width ? Number(line_width) : (this.config.chart_type === 'line' ? 2 : 1),
-          tension: this.config.smoothing ? 0.4 : 0,
-          fill: !!bg_color, // Fill if background color is set, useful for line charts
-          pointRadius: this.config.show_data_points === false ? 0 : 3,
-          pointHoverRadius: this.config.show_data_points === false ? 5 : 4
-        }]
+        datasets: datasets
       },
       options: {
-          indexAxis: this.config.horizontal ? 'y' : 'x',
-          responsive: true,
-          maintainAspectRatio: false,
-        animation: false, // Disable animation for instant feedback on arrow clicks
+        indexAxis: this.config.horizontal ? 'y' : 'x',
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
         color: this.hass.themes.darkMode ? '#fff' : '#666',
         scales: {
           y: {
@@ -310,20 +368,16 @@ class FixedPeriodChart extends LitElement {
             enabled: this.config.show_tooltip !== false
           }
         }
-      }
+      },
+      plugins: [customBgPlugin]
     });
   }
 
   render() {
     if (!this.config) return html``;
 
-    let card_bg_color = this.config.card_bg_color;
-    if (this.config.use_dynamic_card_bg_color && this.config.card_bg_color_entity && this.hass && this.hass.states[this.config.card_bg_color_entity]) {
-      card_bg_color = this.hass.states[this.config.card_bg_color_entity].state;
-    }
-
     return html`
-      <ha-card style=${card_bg_color ? `background: ${card_bg_color};` : ''}>
+      <ha-card style=${this._currentCardBgColor ? `background: ${this._currentCardBgColor};` : ''}>
         ${this.config.title || this.config.show_navigation ? html`
           <div class="card-header-custom">
             ${this.config.show_navigation ? html`<ha-icon-button .path=${"M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"} @click=${() => this.navigateTime(-1)}></ha-icon-button>` : ''}
@@ -341,7 +395,7 @@ class FixedPeriodChart extends LitElement {
         <div class="card-content">
           ${this._isLoading 
             ? html`<div class="loading">Lade Daten...</div>` 
-            : this.chartData.length === 0 
+            : this.chartDatasets.length === 0 
               ? html`<div class="loading">Keine Daten für diesen Zeitraum gefunden</div>` 
               : html`<div id="chart"></div>`}
         </div>
@@ -358,7 +412,6 @@ class FixedPeriodChart extends LitElement {
     const val = e.target.value;
     if (!val) return;
     
-    // Create new temporary local config to override behavior without modifying yaml permanently
     this.config = { ...this.config };
     if (type === 'start') {
       this.config.start = `${val}T00:00:00`;
@@ -424,10 +477,9 @@ class FixedPeriodChart extends LitElement {
 
 customElements.define('fixed-period-chart', FixedPeriodChart);
 
-// Add to Lovelace picker
 window.customCards = window.customCards || [];
 window.customCards.push({
   type: "fixed-period-chart",
   name: "Fixed Period Chart",
-  description: "A chart displaying data for a fixed time period."
+  description: "A chart displaying historical data for a fixed time period for one or multiple entities."
 });

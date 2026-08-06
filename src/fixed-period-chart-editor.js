@@ -18,12 +18,51 @@ class FixedPeriodChartEditor extends LitElement {
   static get properties() {
     return {
       hass: { type: Object },
-      _config: { type: Object }
+      _config: { type: Object },
+      _expandedEntity: { type: Number, state: true }
     };
   }
 
+  constructor() {
+    super();
+    this._expandedEntity = -1;
+  }
+
   setConfig(config) {
-    this._config = config;
+    // Migration: If we have an old config with a single entity, convert to entities array.
+    if (config && !config.entities && config.entity) {
+      const newConfig = { ...config, entities: [{
+        entity: config.entity,
+        legend_label: config.legend_label,
+        color: config.color,
+        color_entity: config.color_entity,
+        use_dynamic_color: config.use_dynamic_color,
+        chart_type: config.chart_type,
+        line_width: config.line_width,
+        line_width_entity: config.line_width_entity,
+        use_dynamic_line_width: config.use_dynamic_line_width,
+        smoothing: config.smoothing,
+        show_data_points: config.show_data_points
+      }]};
+      
+      // Remove migrated single-entity properties
+      delete newConfig.entity;
+      delete newConfig.legend_label;
+      delete newConfig.color;
+      delete newConfig.color_entity;
+      delete newConfig.use_dynamic_color;
+      delete newConfig.chart_type;
+      delete newConfig.line_width;
+      delete newConfig.line_width_entity;
+      delete newConfig.use_dynamic_line_width;
+      delete newConfig.smoothing;
+      delete newConfig.show_data_points;
+      
+      this._config = newConfig;
+      fireEvent(this, 'config-changed', { config: this._config });
+    } else {
+      this._config = config;
+    }
   }
 
   _localize(key) {
@@ -31,8 +70,8 @@ class FixedPeriodChartEditor extends LitElement {
     return localize(key, lang);
   }
 
-  get _entity() {
-    return this._config?.entity || '';
+  get _entities() {
+    return this._config?.entities || [];
   }
 
   get _period() {
@@ -45,60 +84,36 @@ class FixedPeriodChartEditor extends LitElement {
     return this._config?.resolution || 'day';
   }
 
-  get _chart_type() {
-    return this._config?.chart_type || 'bar';
-  }
-
   get _show_date_picker() {
-    return this._config?.show_date_picker !== false; // Default true if not defined
+    return this._config?.show_date_picker !== false;
   }
 
   get _title() {
     return this._config?.title || '';
   }
 
-  get _color() {
-    return this._config?.color || '';
-  }
-
   get _bg_color() {
     return this._config?.bg_color || '';
-  }
-
-  get _line_width() {
-    return this._config?.line_width || '';
   }
 
   get _card_bg_color() {
     return this._config?.card_bg_color || '';
   }
 
-  get _legend_label() {
-    return this._config?.legend_label || '';
-  }
-
-  get _smoothing() {
-    return this._config?.smoothing === true; // Default false
-  }
-
-  get _show_data_points() {
-    return this._config?.show_data_points !== false; // Default true
-  }
-
   get _show_grid_x() {
-    return this._config?.show_grid_x !== false; // Default true
+    return this._config?.show_grid_x !== false;
   }
 
   get _show_grid_y() {
-    return this._config?.show_grid_y !== false; // Default true
+    return this._config?.show_grid_y !== false;
   }
 
   get _show_axis_x() {
-    return this._config?.show_axis_x !== false; // Default true
+    return this._config?.show_axis_x !== false;
   }
 
   get _show_axis_y() {
-    return this._config?.show_axis_y !== false; // Default true
+    return this._config?.show_axis_y !== false;
   }
 
   get _max_ticks_x() {
@@ -110,15 +125,15 @@ class FixedPeriodChartEditor extends LitElement {
   }
 
   get _show_legend() {
-    return this._config?.show_legend !== false; // Default true
+    return this._config?.show_legend !== false;
   }
 
   get _show_tooltip() {
-    return this._config?.show_tooltip !== false; // Default true
+    return this._config?.show_tooltip !== false;
   }
 
   get _show_navigation() {
-    return this._config?.show_navigation === true; // Default false
+    return this._config?.show_navigation === true;
   }
 
   get _horizontal() {
@@ -141,10 +156,6 @@ class FixedPeriodChartEditor extends LitElement {
     return this._config?.resolution_entity || '';
   }
 
-  get _color_entity() {
-    return this._config?.color_entity || '';
-  }
-
   get _bg_color_entity() {
     return this._config?.bg_color_entity || '';
   }
@@ -153,8 +164,40 @@ class FixedPeriodChartEditor extends LitElement {
     return this._config?.card_bg_color_entity || '';
   }
 
-  get _line_width_entity() {
-    return this._config?.line_width_entity || '';
+  _addEntity() {
+    const entities = [...this._entities];
+    entities.push({ entity: '' });
+    this._updateConfig('entities', entities);
+    this._expandedEntity = entities.length - 1;
+  }
+
+  _removeEntity(index) {
+    const entities = [...this._entities];
+    entities.splice(index, 1);
+    this._updateConfig('entities', entities);
+    if (this._expandedEntity === index) {
+      this._expandedEntity = -1;
+    } else if (this._expandedEntity > index) {
+      this._expandedEntity--;
+    }
+  }
+
+  _toggleEntity(index) {
+    if (this._expandedEntity === index) {
+      this._expandedEntity = -1;
+    } else {
+      this._expandedEntity = index;
+    }
+  }
+
+  _updateEntityConfig(index, key, value) {
+    const entities = [...this._entities];
+    if (value === '' || value === undefined) {
+      delete entities[index][key];
+    } else {
+      entities[index] = { ...entities[index], [key]: value };
+    }
+    this._updateConfig('entities', entities);
   }
 
   render() {
@@ -162,30 +205,23 @@ class FixedPeriodChartEditor extends LitElement {
       return html``;
     }
 
-    const useDynamicLineWidth = !!this._config.use_dynamic_line_width;
-
     return html`
       <div class="card-config">
         
         <details class="config-section" open>
           <summary><h3>${this._localize('section.basic')}</h3></summary>
-          <ha-entity-picker
-            .label=${this._localize('label.entity')}
-            .hass=${this.hass}
-            .value=${this._entity}
-            @value-changed=${(ev) => this._updateConfig('entity', ev.detail.value)}
-            allow-custom-entity
-          ></ha-entity-picker>
-
-          <div class="side-by-side" style="margin-top: 16px;">
+          
+          <div class="side-by-side">
             <div>
               <span class="label">${this._localize("label.title")}</span>
               <input type="text" class="styled-input" .value=${this._title} @input=${(ev) => this._updateConfig('title', ev.target.value)}>
             </div>
-            <div>
-              <span class="label">${this._localize("label.legend_label")}</span>
-              <input type="text" class="styled-input" .value=${this._legend_label} @input=${(ev) => this._updateConfig('legend_label', ev.target.value)}>
-            </div>
+          </div>
+          
+          <div style="margin-top: 16px;">
+            <h4 style="margin-bottom: 8px;">Entitäten</h4>
+            ${this._entities.map((ent, index) => this._renderEntity(ent, index))}
+            <button class="add-entity-btn" @click=${this._addEntity}>+ Entität hinzufügen</button>
           </div>
         </details>
 
@@ -294,21 +330,7 @@ class FixedPeriodChartEditor extends LitElement {
         </details>
 
         <details class="config-section">
-          <summary><h3>${this._localize('section.appearance')}</h3></summary>
-          <div class="side-by-side">
-            <div>
-              <span class="label">${this._localize("label.chart_type")}</span>
-              <select class="styled-select" @change=${(ev) => this._updateConfig('chart_type', ev.target.value)}>
-                <option value="bar" ?selected=${this._chart_type === 'bar'}>${this._localize("type.bar")}</option>
-                <option value="line" ?selected=${this._chart_type === 'line'}>${this._localize("type.line")}</option>
-              </select>
-            </div>
-            <div>
-              <span class="label">${this._localize("label.line_width")}</span>
-              <input type="number" class="styled-input" .value=${this._line_width} @input=${(ev) => this._updateConfig('line_width', ev.target.value)} placeholder=${this._localize("label.auto")}>
-            </div>
-          </div>
-
+          <summary><h3>${this._localize('section.appearance')} (Global)</h3></summary>
           <div class="side-by-side" style="margin-top: 16px;">
             <ha-formfield .label=${this._localize("label.horizontal_chart")}>
               <ha-switch
@@ -317,53 +339,10 @@ class FixedPeriodChartEditor extends LitElement {
               ></ha-switch>
             </ha-formfield>
           </div>
-
-
-          ${this._chart_type === 'line' ? html`
-            <div class="side-by-side" style="margin-top: 16px;">
-              <ha-formfield .label=${this._localize("label.smooth_lines")}>
-                <ha-switch
-                  .checked=${this._smoothing === true}
-                  @change=${(ev) => this._updateConfig('smoothing', ev.target.checked)}
-                ></ha-switch>
-              </ha-formfield>
-              <ha-formfield .label=${this._localize("label.show_data_points")}>
-                <ha-switch
-                  .checked=${this._show_data_points !== false}
-                  @change=${(ev) => this._updateConfig('show_data_points', ev.target.checked)}
-                ></ha-switch>
-              </ha-formfield>
-            </div>
-          ` : ''}
-
-          <div style="margin-top: 16px;">
-            <ha-formfield .label=${this._localize("label.use_dynamic_line_width")}>
-              <ha-switch
-                .checked=${useDynamicLineWidth}
-                @change=${(ev) => this._updateConfig('use_dynamic_line_width', ev.target.checked)}
-              ></ha-switch>
-            </ha-formfield>
-          </div>
-
-          ${useDynamicLineWidth ? html`
-            <div class="side-by-side" style="margin-top: 16px;">
-              <ha-entity-picker
-                .label=${this._localize("label.line_width_entity")}
-                .hass=${this.hass}
-                .value=${this._line_width_entity}
-                .includeDomains=${['input_number', 'number']}
-                @value-changed=${(ev) => this._updateConfig('line_width_entity', ev.detail.value)}
-                allow-custom-entity
-              ></ha-entity-picker>
-            </div>
-          ` : ''}
         </details>
 
         <details class="config-section">
-          <summary><h3>${this._localize('section.colors')}</h3></summary>
-          <div class="side-by-side">
-            ${this.renderColorPicker("Line/Border Color", "color")}
-          </div>
+          <summary><h3>${this._localize('section.colors')} (Global)</h3></summary>
           <div class="side-by-side" style="margin-top: 16px;">
             ${this.renderColorPicker(this._localize("color.fill"), "bg_color")}
           </div>
@@ -373,32 +352,32 @@ class FixedPeriodChartEditor extends LitElement {
         </details>
 
         <details class="config-section">
-          <summary><h3>${this._localize('section.display')}</h3></summary>
+          <summary><h3>${this._localize('section.display')} (Global)</h3></summary>
           <div class="side-by-side">
-            <ha-formfield .label=${this._localize("label.show_date_picker")}>
-              <ha-switch
-                .checked=${this._show_date_picker !== false}
-                @change=${(ev) => this._updateConfig('show_date_picker', ev.target.checked)}
-              ></ha-switch>
-            </ha-formfield>
             <ha-formfield .label=${this._localize("label.show_navigation")}>
               <ha-switch
-                .checked=${this._show_navigation === true}
+                .checked=${this._show_navigation}
                 @change=${(ev) => this._updateConfig('show_navigation', ev.target.checked)}
               ></ha-switch>
             </ha-formfield>
-          </div>
-
-          <div class="side-by-side" style="margin-top: 16px;">
             <ha-formfield .label=${this._localize("label.show_legend")}>
               <ha-switch
-                .checked=${this._show_legend !== false}
+                .checked=${this._show_legend}
                 @change=${(ev) => this._updateConfig('show_legend', ev.target.checked)}
+              ></ha-switch>
+            </ha-formfield>
+          </div>
+          
+          <div class="side-by-side" style="margin-top: 16px;">
+            <ha-formfield .label=${this._localize("label.show_date_picker")}>
+              <ha-switch
+                .checked=${this._show_date_picker}
+                @change=${(ev) => this._updateConfig('show_date_picker', ev.target.checked)}
               ></ha-switch>
             </ha-formfield>
             <ha-formfield .label=${this._localize("label.show_tooltips")}>
               <ha-switch
-                .checked=${this._show_tooltip !== false}
+                .checked=${this._show_tooltip}
                 @change=${(ev) => this._updateConfig('show_tooltip', ev.target.checked)}
               ></ha-switch>
             </ha-formfield>
@@ -407,13 +386,13 @@ class FixedPeriodChartEditor extends LitElement {
           <div class="side-by-side" style="margin-top: 16px;">
             <ha-formfield .label=${this._localize("label.show_x_axis")}>
               <ha-switch
-                .checked=${this._show_axis_x !== false}
+                .checked=${this._show_axis_x}
                 @change=${(ev) => this._updateConfig('show_axis_x', ev.target.checked)}
               ></ha-switch>
             </ha-formfield>
             <ha-formfield .label=${this._localize("label.show_y_axis")}>
               <ha-switch
-                .checked=${this._show_axis_y !== false}
+                .checked=${this._show_axis_y}
                 @change=${(ev) => this._updateConfig('show_axis_y', ev.target.checked)}
               ></ha-switch>
             </ha-formfield>
@@ -422,13 +401,13 @@ class FixedPeriodChartEditor extends LitElement {
           <div class="side-by-side" style="margin-top: 16px;">
             <ha-formfield .label=${this._localize("label.show_x_grid")}>
               <ha-switch
-                .checked=${this._show_grid_x !== false}
+                .checked=${this._show_grid_x}
                 @change=${(ev) => this._updateConfig('show_grid_x', ev.target.checked)}
               ></ha-switch>
             </ha-formfield>
             <ha-formfield .label=${this._localize("label.show_y_grid")}>
               <ha-switch
-                .checked=${this._show_grid_y !== false}
+                .checked=${this._show_grid_y}
                 @change=${(ev) => this._updateConfig('show_grid_y', ev.target.checked)}
               ></ha-switch>
             </ha-formfield>
@@ -446,6 +425,98 @@ class FixedPeriodChartEditor extends LitElement {
           </div>
         </details>
 
+      </div>
+    `;
+  }
+
+  _renderEntity(ent, index) {
+    const isExpanded = this._expandedEntity === index;
+    const chartType = ent.chart_type || 'bar';
+    const useDynamicLineWidth = !!ent.use_dynamic_line_width;
+
+    return html`
+      <div class="entity-row">
+        <div class="entity-header">
+          <ha-entity-picker
+            .hass=${this.hass}
+            .value=${ent.entity}
+            @value-changed=${(ev) => this._updateEntityConfig(index, 'entity', ev.detail.value)}
+            allow-custom-entity
+            style="flex: 1;"
+          ></ha-entity-picker>
+          <button class="icon-btn" @click=${() => this._toggleEntity(index)}>
+            ${isExpanded ? '▲' : '▼'}
+          </button>
+          <button class="icon-btn remove-btn" @click=${() => this._removeEntity(index)}>
+            ✕
+          </button>
+        </div>
+        ${isExpanded ? html`
+          <div class="entity-content">
+            <div class="side-by-side" style="margin-top: 8px;">
+              <div>
+                <span class="label">${this._localize("label.legend_label")}</span>
+                <input type="text" class="styled-input" .value=${ent.legend_label || ''} @input=${(ev) => this._updateEntityConfig(index, 'legend_label', ev.target.value)}>
+              </div>
+              <div>
+                <span class="label">${this._localize("label.chart_type")}</span>
+                <select class="styled-select" @change=${(ev) => this._updateEntityConfig(index, 'chart_type', ev.target.value)}>
+                  <option value="bar" ?selected=${chartType === 'bar'}>${this._localize("type.bar")}</option>
+                  <option value="line" ?selected=${chartType === 'line'}>${this._localize("type.line")}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="side-by-side" style="margin-top: 16px;">
+              ${this.renderEntityColorPicker(this._localize("color.line_bar"), "color", ent, index)}
+            </div>
+
+            <div class="side-by-side" style="margin-top: 16px;">
+              <div>
+                <span class="label">${this._localize("label.line_width")}</span>
+                <input type="number" class="styled-input" .value=${ent.line_width || ''} @input=${(ev) => this._updateEntityConfig(index, 'line_width', ev.target.value)} placeholder=${this._localize("label.auto")}>
+              </div>
+              <div style="display: flex; align-items: center; margin-top: 20px;">
+                <ha-formfield .label=${this._localize("label.use_dynamic_line_width")}>
+                  <ha-switch
+                    .checked=${useDynamicLineWidth}
+                    @change=${(ev) => this._updateEntityConfig(index, 'use_dynamic_line_width', ev.target.checked)}
+                  ></ha-switch>
+                </ha-formfield>
+              </div>
+            </div>
+
+            ${useDynamicLineWidth ? html`
+              <div class="side-by-side" style="margin-top: 16px;">
+                <ha-entity-picker
+                  .label=${this._localize("label.line_width_entity")}
+                  .hass=${this.hass}
+                  .value=${ent.line_width_entity || ''}
+                  .includeDomains=${['input_number', 'number']}
+                  @value-changed=${(ev) => this._updateEntityConfig(index, 'line_width_entity', ev.detail.value)}
+                  allow-custom-entity
+                ></ha-entity-picker>
+              </div>
+            ` : ''}
+
+            ${chartType === 'line' ? html`
+              <div class="side-by-side" style="margin-top: 16px;">
+                <ha-formfield .label=${this._localize("label.smooth_lines")}>
+                  <ha-switch
+                    .checked=${ent.smoothing === true}
+                    @change=${(ev) => this._updateEntityConfig(index, 'smoothing', ev.target.checked)}
+                  ></ha-switch>
+                </ha-formfield>
+                <ha-formfield .label=${this._localize("label.show_data_points")}>
+                  <ha-switch
+                    .checked=${ent.show_data_points !== false}
+                    @change=${(ev) => this._updateEntityConfig(index, 'show_data_points', ev.target.checked)}
+                  ></ha-switch>
+                </ha-formfield>
+              </div>
+            ` : ''}
+          </div>
+        ` : ''}
       </div>
     `;
   }
@@ -482,6 +553,60 @@ class FixedPeriodChartEditor extends LitElement {
       opacity = 0;
     }
     return { hex, opacity };
+  }
+
+  renderEntityColorPicker(label, key, ent, index) {
+    const colorVal = ent[key] || '';
+    const parsed = this._parseColor(colorVal);
+    const entityKey = key + '_entity';
+    const entityVal = ent[entityKey] || '';
+    const useDynamic = !!ent[`use_dynamic_${key}`];
+    
+    return html`
+      <div style="flex: 1;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span class="label" style="margin: 0;">${label}</span>
+          <ha-formfield .label=${this._localize("label.dynamic")}>
+            <ha-switch
+              .checked=${useDynamic}
+              @change=${(ev) => this._updateEntityConfig(index, `use_dynamic_${key}`, ev.target.checked)}
+            ></ha-switch>
+          </ha-formfield>
+        </div>
+        
+        ${useDynamic ? html`
+          <ha-entity-picker
+            .label=${label + " Entity"}
+            .hass=${this.hass}
+            .value=${entityVal}
+            @value-changed=${(ev) => this._updateEntityConfig(index, entityKey, ev.detail.value)}
+            allow-custom-entity
+          ></ha-entity-picker>
+        ` : html`
+          <div style="display: flex; gap: 8px; flex-direction: column;">
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="color" style="height: 36px; width: 46px; padding: 0; cursor: pointer; border: 1px solid var(--divider-color); border-radius: 4px; flex-shrink: 0;" 
+                     .value=${parsed.hex} 
+                     @input=${(ev) => {
+                       const r = parseInt(ev.target.value.slice(1, 3), 16);
+                       const g = parseInt(ev.target.value.slice(3, 5), 16);
+                       const b = parseInt(ev.target.value.slice(5, 7), 16);
+                       this._updateEntityConfig(index, key, `rgba(${r}, ${g}, ${b}, ${parsed.opacity})`);
+                     }}>
+              <input type="range" min="0" max="1" step="0.01" .value=${parsed.opacity} style="flex: 1; min-width: 60px;"
+                     @input=${(ev) => {
+                       const r = parseInt(parsed.hex.slice(1, 3), 16);
+                       const g = parseInt(parsed.hex.slice(3, 5), 16);
+                       const b = parseInt(parsed.hex.slice(5, 7), 16);
+                       this._updateEntityConfig(index, key, `rgba(${r}, ${g}, ${b}, ${ev.target.value})`);
+                     }}>
+              <span style="font-size: 12px; color: var(--secondary-text-color); width: 36px; text-align: right; flex-shrink: 0;">${Math.round(parsed.opacity * 100)}%</span>
+            </div>
+            <input type="text" class="styled-input" .value=${colorVal} @input=${(ev) => this._updateEntityConfig(index, key, ev.target.value)} placeholder=${this._localize("color.placeholder")}>
+          </div>
+        `}
+      </div>
+    `;
   }
 
   renderColorPicker(label, key) {
@@ -564,6 +689,55 @@ class FixedPeriodChartEditor extends LitElement {
 
   static get styles() {
     return css`
+      .entity-row {
+        border: 1px solid var(--divider-color, #e0e0e0);
+        border-radius: 4px;
+        margin-bottom: 8px;
+        background: var(--card-background-color, #fff);
+        overflow: hidden;
+      }
+      .entity-header {
+        display: flex;
+        align-items: center;
+        padding: 8px;
+        gap: 8px;
+        background: rgba(var(--rgb-primary-text-color), 0.02);
+      }
+      .entity-content {
+        padding: 16px;
+        border-top: 1px solid var(--divider-color, #e0e0e0);
+      }
+      .icon-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        color: var(--secondary-text-color);
+        padding: 4px 8px;
+        border-radius: 4px;
+      }
+      .icon-btn:hover {
+        background: rgba(var(--rgb-primary-text-color), 0.05);
+      }
+      .remove-btn:hover {
+        color: var(--error-color, #f44336);
+        background: rgba(244, 67, 54, 0.1);
+      }
+      .add-entity-btn {
+        background: none;
+        border: 1px dashed var(--primary-color);
+        color: var(--primary-color);
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 8px;
+        font-weight: 500;
+        transition: background 0.2s;
+      }
+      .add-entity-btn:hover {
+        background: rgba(var(--rgb-primary-color), 0.1);
+      }
       .config-section {
         border: 1px solid var(--divider-color, #e0e0e0);
         border-radius: 8px;

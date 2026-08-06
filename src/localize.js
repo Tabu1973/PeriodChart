@@ -7,6 +7,8 @@ const translations = {
     "section.display": "5. Display & Axes",
     
     "label.entity": "Entity (Sensor)",
+    "label.entities": "Entities",
+    "btn.add_entity": "+ Add Entity",
     "label.title": "Title (Optional)",
     "label.legend_label": "Legend Label (Optional)",
     
@@ -78,6 +80,8 @@ const translations = {
     "section.display": "5. Anzeige & Achsen",
     
     "label.entity": "Entität (Sensor)",
+    "label.entities": "Entitäten",
+    "btn.add_entity": "+ Entität hinzufügen",
     "label.title": "Titel (Optional)",
     "label.legend_label": "Legenden-Label (Optional)",
     
