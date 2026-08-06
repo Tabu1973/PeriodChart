@@ -178,14 +178,32 @@ class FixedPeriodChartEditor extends LitElement {
   }
 
   _removeEntity(index) {
-    const entities = [...this._entities];
-    entities.splice(index, 1);
-    this._updateConfig('entities', entities);
+    const newEntities = [...this._entities];
+    newEntities.splice(index, 1);
+    this._updateConfig('entities', newEntities);
     if (this._expandedEntity === index) {
       this._expandedEntity = -1;
     } else if (this._expandedEntity > index) {
       this._expandedEntity--;
     }
+  }
+
+  _moveEntity(index, dir) {
+    const newEntities = [...this._entities];
+    const target = index + dir;
+    if (target < 0 || target >= newEntities.length) return;
+    
+    const temp = newEntities[index];
+    newEntities[index] = newEntities[target];
+    newEntities[target] = temp;
+
+    if (this._expandedEntity === index) {
+      this._expandedEntity = target;
+    } else if (this._expandedEntity === target) {
+      this._expandedEntity = index;
+    }
+
+    this._updateConfig('entities', newEntities);
   }
 
   _toggleEntity(index) {
@@ -453,6 +471,19 @@ class FixedPeriodChartEditor extends LitElement {
             allow-custom-entity
             style="flex: 1;"
           ></ha-entity-picker>
+          
+          ${index > 0 ? html`
+            <button class="icon-btn" @click=${() => this._moveEntity(index, -1)} title="Nach oben">
+              ↑
+            </button>
+          ` : html`<div style="width: 30px;"></div>`}
+          
+          ${index < this._entities.length - 1 ? html`
+            <button class="icon-btn" @click=${() => this._moveEntity(index, 1)} title="Nach unten">
+              ↓
+            </button>
+          ` : html`<div style="width: 30px;"></div>`}
+
           <button class="icon-btn" @click=${() => this._toggleEntity(index)}>
             ${isExpanded ? '▲' : '▼'}
           </button>
