@@ -15,11 +15,13 @@ class FixedPeriodChart extends LitElement {
 
   constructor() {
     super();
+    this._instanceId = Math.random().toString(36).substring(7);
     this.chartDatasets = [];
     this.chartLabels = [];
     this.chart = null;
     this._isLoading = false;
     this._timeOffset = 0;
+    this._currentEntityStyles = '';
   }
 
   get _entities() {
@@ -169,7 +171,7 @@ class FixedPeriodChart extends LitElement {
       const hashChanged = this._entitiesHash !== currentHash;
 
       if (startChanged || endChanged || resChanged || hashChanged) {
-        console.log(`[FixedPeriodChart] Fetching because: startChanged=${startChanged}, endChanged=${endChanged}, resChanged=${resChanged}, hashChanged=${hashChanged}. OldHash: ${this._entitiesHash}, NewHash: ${currentHash}`);
+        console.log(`[FixedPeriodChart][${this._instanceId}] Fetching because: startChanged=${startChanged}, endChanged=${endChanged}, resChanged=${resChanged}, hashChanged=${hashChanged}. OldHash: ${this._entitiesHash}, NewHash: ${currentHash}`);
         this._currentStart = start;
         this._currentEnd = end;
         this._currentResolution = resolution;
