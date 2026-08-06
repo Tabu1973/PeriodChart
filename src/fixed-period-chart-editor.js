@@ -121,6 +121,10 @@ class FixedPeriodChartEditor extends LitElement {
     return this._config?.show_navigation === true; // Default false
   }
 
+  get _horizontal() {
+    return this._config?.horizontal === true;
+  }
+
   get _period_entity() {
     return this._config?.period_entity || '';
   }
@@ -289,7 +293,7 @@ class FixedPeriodChartEditor extends LitElement {
           ` : ''}
         </details>
 
-        <details class="config-section">
+        <details class="config-section" open>
           <summary><h3>${this._localize('section.appearance')}</h3></summary>
           <div class="side-by-side">
             <div>
@@ -308,7 +312,7 @@ class FixedPeriodChartEditor extends LitElement {
           <div class="side-by-side" style="margin-top: 16px;">
             <ha-formfield .label=${this._localize("label.horizontal_chart")}>
               <ha-switch
-                .checked=${this._config.horizontal === true}
+                .checked=${this._horizontal}
                 @change=${(ev) => this._updateConfig('horizontal', ev.target.checked)}
               ></ha-switch>
             </ha-formfield>
