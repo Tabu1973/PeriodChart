@@ -45,9 +45,6 @@ class FixedPeriodChart extends LitElement {
   }
 
   setConfig(config) {
-    if (!config.entities && !config.entity) {
-      throw new Error('You need to define at least one entity');
-    }
     this.config = config;
   }
 
@@ -314,7 +311,9 @@ class FixedPeriodChart extends LitElement {
         indexAxis: this.config.horizontal ? 'y' : 'x',
         responsive: true,
         maintainAspectRatio: false,
-        animation: false,
+        animation: {
+          duration: 400
+        },
         color: this.hass.themes.darkMode ? '#fff' : '#666',
         scales: {
           y: {
