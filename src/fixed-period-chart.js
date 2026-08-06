@@ -140,16 +140,7 @@ class FixedPeriodChart extends LitElement {
     }
 
     let visualConfigChanged = false;
-    // Check global colors
-    let bg_color = this.config.bg_color;
-    if (this.config.use_dynamic_bg_color && this.config.bg_color_entity && this.hass.states[this.config.bg_color_entity]) {
-      bg_color = this.hass.states[this.config.bg_color_entity].state;
-    }
-    if (this._currentBgColor !== bg_color) {
-      this._currentBgColor = bg_color;
-      visualConfigChanged = true;
-    }
-
+    
     let card_bg_color = this.config.card_bg_color;
     if (this.config.use_dynamic_card_bg_color && this.config.card_bg_color_entity && this.hass.states[this.config.card_bg_color_entity]) {
       card_bg_color = this.hass.states[this.config.card_bg_color_entity].state;
@@ -159,10 +150,11 @@ class FixedPeriodChart extends LitElement {
       visualConfigChanged = true;
     }
     
-    // Evaluate if entity colors changed
+    // Evaluate if entity styles changed
     const entities = this._entities;
     const currentEntityStyles = JSON.stringify(entities.map(e => ({
       color: e.use_dynamic_color && e.color_entity && this.hass.states[e.color_entity] ? this.hass.states[e.color_entity].state : e.color,
+      bg_color: e.use_dynamic_bg_color && e.bg_color_entity && this.hass.states[e.bg_color_entity] ? this.hass.states[e.bg_color_entity].state : e.bg_color,
       width: e.use_dynamic_line_width && e.line_width_entity && this.hass.states[e.line_width_entity] ? this.hass.states[e.line_width_entity].state : e.line_width
     })));
 
@@ -274,6 +266,11 @@ class FixedPeriodChart extends LitElement {
       if (ent.use_dynamic_color && ent.color_entity && this.hass.states[ent.color_entity]) {
         color = this.hass.states[ent.color_entity].state;
       }
+      
+      let bg_color = ent.bg_color;
+      if (ent.use_dynamic_bg_color && ent.bg_color_entity && this.hass.states[ent.bg_color_entity]) {
+        bg_color = this.hass.states[ent.bg_color_entity].state;
+      }
 
       let line_width = ent.line_width;
       if (ent.use_dynamic_line_width && ent.line_width_entity && this.hass.states[ent.line_width_entity]) {
@@ -283,11 +280,11 @@ class FixedPeriodChart extends LitElement {
       return {
         label: ent.legend_label || ent.entity,
         data: this.chartDatasets[idx] || [],
-        backgroundColor: color || 'rgba(54, 162, 235, 0.5)',
+        backgroundColor: bg_color || color || 'rgba(54, 162, 235, 0.5)',
         borderColor: color || 'rgba(54, 162, 235, 1)',
         borderWidth: line_width ? Number(line_width) : (ent.chart_type === 'line' ? 2 : 1),
         tension: ent.smoothing ? 0.4 : 0,
-        fill: ent.chart_type === 'line' ? (!!this._currentBgColor) : true, 
+        fill: ent.chart_type === 'line' ? (!!bg_color) : true, 
         pointRadius: ent.show_data_points === false ? 0 : 3,
         pointHoverRadius: ent.show_data_points === false ? 5 : 4,
         type: ent.chart_type || 'bar'
@@ -307,21 +304,6 @@ class FixedPeriodChart extends LitElement {
       }
     };
     let chartScales = this.config.horizontal ? { x: valueScale, y: categoryScale } : { x: categoryScale, y: valueScale };
-
-    // Plugin for custom background color
-    const customBgPlugin = {
-      id: 'customCanvasBackgroundColor',
-      beforeDraw: (chart) => {
-        if (this._currentBgColor) {
-          const ctx = chart.canvas.getContext('2d');
-          ctx.save();
-          ctx.globalCompositeOperation = 'destination-over';
-          ctx.fillStyle = this._currentBgColor;
-          ctx.fillRect(0, 0, chart.width, chart.height);
-          ctx.restore();
-        }
-      }
-    };
 
     this.chart = new Chart(canvas, {
       data: {
@@ -368,8 +350,7 @@ class FixedPeriodChart extends LitElement {
             enabled: this.config.show_tooltip !== false
           }
         }
-      },
-      plugins: [customBgPlugin]
+      }
     });
   }
 

@@ -37,6 +37,9 @@ class FixedPeriodChartEditor extends LitElement {
         color: config.color,
         color_entity: config.color_entity,
         use_dynamic_color: config.use_dynamic_color,
+        bg_color: config.bg_color,
+        bg_color_entity: config.bg_color_entity,
+        use_dynamic_bg_color: config.use_dynamic_bg_color,
         chart_type: config.chart_type,
         line_width: config.line_width,
         line_width_entity: config.line_width_entity,
@@ -51,6 +54,9 @@ class FixedPeriodChartEditor extends LitElement {
       delete newConfig.color;
       delete newConfig.color_entity;
       delete newConfig.use_dynamic_color;
+      delete newConfig.bg_color;
+      delete newConfig.bg_color_entity;
+      delete newConfig.use_dynamic_bg_color;
       delete newConfig.chart_type;
       delete newConfig.line_width;
       delete newConfig.line_width_entity;
@@ -344,9 +350,6 @@ class FixedPeriodChartEditor extends LitElement {
         <details class="config-section">
           <summary><h3>${this._localize('section.colors')} (Global)</h3></summary>
           <div class="side-by-side" style="margin-top: 16px;">
-            ${this.renderColorPicker(this._localize("color.fill"), "bg_color")}
-          </div>
-          <div class="side-by-side" style="margin-top: 16px;">
             ${this.renderColorPicker("Card Background Color", "card_bg_color")}
           </div>
         </details>
@@ -469,6 +472,10 @@ class FixedPeriodChartEditor extends LitElement {
 
             <div class="side-by-side" style="margin-top: 16px;">
               ${this.renderEntityColorPicker(this._localize("color.line_bar"), "color", ent, index)}
+            </div>
+            
+            <div class="side-by-side" style="margin-top: 16px;">
+              ${this.renderEntityColorPicker(this._localize("color.fill"), "bg_color", ent, index)}
             </div>
 
             <div class="side-by-side" style="margin-top: 16px;">
