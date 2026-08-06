@@ -283,12 +283,13 @@ class FixedPeriodChart extends LitElement {
         data: this.chartDatasets[idx] || [],
         backgroundColor: bg_color || color || 'rgba(54, 162, 235, 0.5)',
         borderColor: color || 'rgba(54, 162, 235, 1)',
-        borderWidth: line_width ? Number(line_width) : (ent.chart_type === 'line' ? 2 : 1),
+        borderWidth: line_width ? Number(line_width) : (ent.chart_type === 'line' ? 2 : (ent.chart_type === 'scatter' ? 0 : 1)),
         tension: ent.smoothing ? 0.4 : 0,
         fill: ent.chart_type === 'line' ? (!!bg_color) : true, 
-        pointRadius: ent.show_data_points === false ? 0 : 3,
-        pointHoverRadius: ent.show_data_points === false ? 5 : 4,
-        type: ent.chart_type || 'bar'
+        pointRadius: ent.show_data_points === false ? 0 : (ent.chart_type === 'scatter' ? 4 : 3),
+        pointHoverRadius: ent.show_data_points === false ? 5 : (ent.chart_type === 'scatter' ? 6 : 4),
+        showLine: ent.chart_type !== 'scatter',
+        type: ent.chart_type === 'scatter' ? 'line' : (ent.chart_type || 'bar')
       };
     });
 
@@ -337,7 +338,8 @@ class FixedPeriodChart extends LitElement {
         responsive: true,
         maintainAspectRatio: false,
         animation: {
-          duration: 400
+          duration: 400,
+          easing: this.config.animation_easing || 'easeOutQuart'
         },
         color: this.hass.themes.darkMode ? '#fff' : '#666',
         scales: {
