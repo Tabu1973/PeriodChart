@@ -216,6 +216,13 @@ class FixedPeriodChartEditor extends LitElement {
 
   _updateEntityConfig(index, key, value) {
     const entities = [...this._entities];
+    
+    // Check if the value actually changed to prevent infinite loops in the editor
+    const currentValue = entities[index][key] !== undefined ? entities[index][key] : '';
+    if (currentValue === value) {
+      return;
+    }
+    
     if (value === '' || value === undefined) {
       delete entities[index][key];
     } else {
@@ -712,8 +719,8 @@ class FixedPeriodChartEditor extends LitElement {
       return;
     }
     
-    // For properties that start with underscore
-    if (this[`_${key}`] === value) {
+    const currentValue = this._config[key] !== undefined ? this._config[key] : '';
+    if (currentValue === value || (key.startsWith('_') && this[`_${key}`] === value)) {
       return;
     }
 
