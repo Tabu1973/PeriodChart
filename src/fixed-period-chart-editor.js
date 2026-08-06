@@ -431,6 +431,19 @@ class FixedPeriodChartEditor extends LitElement {
           </div>
 
           <div class="side-by-side" style="margin-top: 16px;">
+            <div>
+              <span class="label">Animation Easing (Übergangseffekt)</span>
+              <select class="styled-select" @change=${(ev) => this._updateConfig('animation_easing', ev.target.value)}>
+                <option value="easeOutQuart" ?selected=${this._config.animation_easing === 'easeOutQuart' || !this._config.animation_easing}>Standard (easeOutQuart)</option>
+                <option value="linear" ?selected=${this._config.animation_easing === 'linear'}>Linear</option>
+                <option value="easeInOutElastic" ?selected=${this._config.animation_easing === 'easeInOutElastic'}>Elastisch (easeInOutElastic)</option>
+                <option value="easeOutBounce" ?selected=${this._config.animation_easing === 'easeOutBounce'}>Bouncend (easeOutBounce)</option>
+                <option value="easeInOutBack" ?selected=${this._config.animation_easing === 'easeInOutBack'}>Rückschwingend (easeInOutBack)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="side-by-side" style="margin-top: 16px;">
             <ha-formfield .label=${this._localize("label.show_x_grid")}>
               <ha-switch
                 .checked=${this._show_grid_x}
@@ -514,6 +527,7 @@ class FixedPeriodChartEditor extends LitElement {
                 <select class="styled-select" @change=${(ev) => this._updateEntityConfig(index, 'chart_type', ev.target.value)}>
                   <option value="bar" ?selected=${chartType === 'bar'}>${this._localize("type.bar")}</option>
                   <option value="line" ?selected=${chartType === 'line'}>${this._localize("type.line")}</option>
+                  <option value="scatter" ?selected=${chartType === 'scatter'}>Punkte (Scatter)</option>
                 </select>
               </div>
             </div>
@@ -648,6 +662,7 @@ class FixedPeriodChartEditor extends LitElement {
                        const b = parseInt(ev.target.value.slice(5, 7), 16);
                        this._updateEntityConfig(index, key, `rgba(${r}, ${g}, ${b}, ${parsed.opacity})`);
                      }}>
+              <span class="label" style="margin: 0;">Transparenz:</span>
               <input type="range" min="0" max="1" step="0.01" .value=${parsed.opacity} style="flex: 1; min-width: 60px;"
                      @input=${(ev) => {
                        const r = parseInt(parsed.hex.slice(1, 3), 16);
@@ -702,6 +717,7 @@ class FixedPeriodChartEditor extends LitElement {
                        const b = parseInt(ev.target.value.slice(5, 7), 16);
                        this._updateConfig(key, `rgba(${r}, ${g}, ${b}, ${parsed.opacity})`);
                      }}>
+              <span class="label" style="margin: 0;">Transparenz:</span>
               <input type="range" min="0" max="1" step="0.01" .value=${parsed.opacity} style="flex: 1; min-width: 60px;"
                      @input=${(ev) => {
                        const r = parseInt(parsed.hex.slice(1, 3), 16);
