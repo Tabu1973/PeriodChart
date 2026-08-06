@@ -176,7 +176,6 @@ class FixedPeriodChart extends LitElement {
   async fetchData(start, end, resolution) {
     try {
       this._isLoading = true;
-      this.chartDatasets = []; 
       this.requestUpdate(); 
       
       const entities = this._entities;
@@ -245,19 +244,24 @@ class FixedPeriodChart extends LitElement {
     const chartContainer = this.shadowRoot.querySelector('#chart');
     if (!chartContainer) return;
 
-    let canvas = chartContainer.querySelector('canvas');
-    if (!canvas) {
-      canvas = document.createElement('canvas');
-      chartContainer.innerHTML = '';
-      chartContainer.appendChild(canvas);
-    }
-
-    if (this.chart) {
-      this.chart.destroy();
-      this.chart = null;
-    }
-
+    const visualConfig = { ...this.config };
+    delete visualConfig.start;
+    delete visualConfig.end;
+    
+    // Evaluate if entity styles changed
     const entities = this._entities;
+    const currentEntityStyles = entities.map(e => ({
+      color: e.use_dynamic_color && e.color_entity && this.hass.states[e.color_entity] ? this.hass.states[e.color_entity].state : e.color,
+      bg_color: e.use_dynamic_bg_color && e.bg_color_entity && this.hass.states[e.bg_color_entity] ? this.hass.states[e.bg_color_entity].state : e.bg_color,
+      width: e.use_dynamic_line_width && e.line_width_entity && this.hass.states[e.line_width_entity] ? this.hass.states[e.line_width_entity].state : e.line_width
+    }));
+
+    const configStr = JSON.stringify({ 
+      v: visualConfig, 
+      s: currentEntityStyles, 
+      d: this.hass.themes.darkMode 
+    });
+
     const datasets = entities.map((ent, idx) => {
       let color = ent.color;
       if (ent.use_dynamic_color && ent.color_entity && this.hass.states[ent.color_entity]) {
@@ -287,6 +291,27 @@ class FixedPeriodChart extends LitElement {
         type: ent.chart_type || 'bar'
       };
     });
+
+    if (this.chart && this._lastRenderConfig === configStr) {
+      this.chart.data.labels = this.chartLabels;
+      this.chart.data.datasets = datasets;
+      this.chart.update();
+      return;
+    }
+
+    let canvas = chartContainer.querySelector('canvas');
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      chartContainer.innerHTML = '';
+      chartContainer.appendChild(canvas);
+    }
+
+    if (this.chart) {
+      this.chart.destroy();
+      this.chart = null;
+    }
+
+    this._lastRenderConfig = configStr;
 
     let categoryScale = {
       display: this.config.show_x_axis !== false,
@@ -377,7 +402,7 @@ class FixedPeriodChart extends LitElement {
           </div>
         ` : ''}
         <div class="card-content">
-          ${this._isLoading 
+          ${this._isLoading && this.chartDatasets.length === 0
             ? html`<div class="loading">Lade Daten...</div>` 
             : this.chartDatasets.length === 0 
               ? html`<div class="loading">Keine Daten für diesen Zeitraum gefunden</div>` 
