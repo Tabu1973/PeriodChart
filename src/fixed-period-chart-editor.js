@@ -293,7 +293,7 @@ class FixedPeriodChartEditor extends LitElement {
           ` : ''}
         </details>
 
-        <details class="config-section" open>
+        <details class="config-section">
           <summary><h3>${this._localize('section.appearance')}</h3></summary>
           <div class="side-by-side">
             <div>
