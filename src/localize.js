@@ -67,6 +67,7 @@ const translations = {
     "label.show_x_axis": "Show X-Axis",
     "label.show_x_grid": "Show X-Grid",
     "label.max_ticks_x": "Max Ticks X-Axis (e.g. 10)",
+    "label.x_axis_rotation": "X-Axis Label Rotation (e.g. -45, 45, 90)",
     
     "label.show_y_axis": "Show Y-Axis",
     "label.show_y_grid": "Show Y-Grid",
@@ -140,6 +141,7 @@ const translations = {
     "label.show_x_axis": "X-Achse anzeigen",
     "label.show_x_grid": "X-Raster (Grid) anzeigen",
     "label.max_ticks_x": "Max. Ticks X-Achse (z.B. 10)",
+    "label.x_axis_rotation": "X-Achsen-Beschriftung Drehung (z.B. -45, 45, 90)",
     
     "label.show_y_axis": "Y-Achse anzeigen",
     "label.show_y_grid": "Y-Raster (Grid) anzeigen",

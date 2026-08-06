@@ -232,7 +232,7 @@ class FixedPeriodChartEditor extends LitElement {
         </details>
 
         <details class="config-section">
-          <summary><h3>${this._localize('section.time')}</h3></summary>
+          <summary><h3>${this._localize('section.time')} (Global)</h3></summary>
           <div class="side-by-side">
             <div>
               <span class="label">${this._localize("label.period")}</span>
@@ -417,10 +417,16 @@ class FixedPeriodChartEditor extends LitElement {
           </div>
 
           <div class="side-by-side" style="margin-top: 16px;">
-            <div>
+            <div style="flex: 1;">
               <span class="label">${this._localize("label.max_ticks_x")}</span>
-              <input type="number" class="styled-input" .value=${this._max_ticks_x} @input=${(ev) => this._updateConfig('max_ticks_x', ev.target.value)} placeholder=${this._localize("label.auto")}>
+              <input type="number" class="styled-input" .value=${this._config.max_ticks_x || ''} @input=${(ev) => this._updateConfig("max_ticks_x", ev.target.value)}>
             </div>
+            <div style="flex: 1;">
+              <span class="label">${this._localize("label.x_axis_rotation") || "X-Axis Rotation (e.g. 45)"}</span>
+              <input type="number" class="styled-input" .value=${this._config.x_axis_rotation || ''} @input=${(ev) => this._updateConfig("x_axis_rotation", ev.target.value)}>
+            </div>
+          </div>
+          <div class="side-by-side" style="margin-top: 16px;">
             <div>
               <span class="label">${this._localize("label.step_size_y")}</span>
               <input type="number" class="styled-input" .value=${this._step_size_y} @input=${(ev) => this._updateConfig('step_size_y', ev.target.value)} placeholder=${this._localize("label.auto")}>

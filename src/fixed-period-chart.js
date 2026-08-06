@@ -337,7 +337,11 @@ class FixedPeriodChart extends LitElement {
             },
             ticks: { 
               color: this.hass.themes.darkMode ? '#ccc' : '#666',
-              ...(this.config.max_ticks_x ? { maxTicksLimit: Number(this.config.max_ticks_x) } : {})
+              ...(this.config.max_ticks_x ? { maxTicksLimit: Number(this.config.max_ticks_x) } : {}),
+              ...(this.config.x_axis_rotation !== undefined && this.config.x_axis_rotation !== '' ? {
+                maxRotation: Number(this.config.x_axis_rotation),
+                minRotation: Number(this.config.x_axis_rotation)
+              } : {})
             }
           }
         },
