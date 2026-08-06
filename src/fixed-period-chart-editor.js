@@ -583,6 +583,16 @@ class FixedPeriodChartEditor extends LitElement {
                   ></ha-switch>
                 </ha-formfield>
               </div>
+              <div class="side-by-side" style="margin-top: 16px;">
+                <div>
+                  <span class="label">Linienstil (Line Style)</span>
+                  <select class="styled-select" @change=${(ev) => this._updateEntityConfig(index, 'line_style', ev.target.value)}>
+                    <option value="solid" ?selected=${!ent.line_style || ent.line_style === 'solid'}>Durchgezogen (Solid)</option>
+                    <option value="dashed" ?selected=${ent.line_style === 'dashed'}>Gestrichelt (Dashed)</option>
+                    <option value="dotted" ?selected=${ent.line_style === 'dotted'}>Gepunktet (Dotted)</option>
+                  </select>
+                </div>
+              </div>
             ` : ''}
           </div>
         ` : ''}

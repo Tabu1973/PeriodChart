@@ -299,6 +299,7 @@ class FixedPeriodChart extends LitElement {
         pointRadius: ent.show_data_points === false ? 0 : (ent.chart_type === 'scatter' ? 4 : 3),
         pointHoverRadius: ent.show_data_points === false ? 5 : (ent.chart_type === 'scatter' ? 6 : 4),
         showLine: ent.chart_type !== 'scatter',
+        borderDash: ent.line_style === 'dashed' ? [5, 5] : (ent.line_style === 'dotted' ? [2, 3] : []),
         type: ent.chart_type === 'scatter' ? 'line' : (ent.chart_type || 'bar')
       };
     });
