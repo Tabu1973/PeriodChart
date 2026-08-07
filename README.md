@@ -4,6 +4,7 @@ A custom Lovelace card for Home Assistant that displays historical data (states/
 
 ![Beta Version](https://img.shields.io/badge/version-0.0.1--beta-orange.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Tabu1973&repository=PeriodChart&category=plugin)
 
 ## Features
 
@@ -42,10 +43,29 @@ The Visual Editor is split into 5 intuitive sections:
 3. **Appearance:** Set global colors (like the card background).
 4. **Display & Axes:** Toggle visibility of the legend, tooltips, axes, grid lines, and choose your animation easing effect.
 
-### Custom Period Control
-If you select **Custom** as your period, you can use Home Assistant helpers to control the time frame:
-- **Start / End Entity:** Map an `input_datetime` helper to dynamically set the exact start and end dates.
-- **Period Entity:** Map an `input_select` helper containing values like `1_month`, `1_year`, `7_days` to let users switch the time range via a dropdown menu in your dashboard.
+### Custom Period & Resolution Control
+If you select **Custom** as your period (or want to control resolution dynamically), you can use Home Assistant helpers (`input_select`) to control the chart from your dashboard.
+
+**Period Entity (`input_select`):**
+If you map a Period Entity, your `input_select` options must use the following exact internal string values (you can use translations/friendly names in the UI, but the underlying state must be one of these):
+- `today`
+- `yesterday`
+- `this_week`
+- `last_week`
+- `this_month`
+- `last_month`
+- `this_year`
+- `last_year`
+
+**Resolution Entity (`input_select`):**
+If you want to let users change the resolution dynamically (e.g. from daily to monthly bars), the underlying state must be one of:
+- `hour`
+- `day`
+- `month`
+- `year`
+
+**Start / End Entity (`input_datetime`):**
+- Map an `input_datetime` helper to dynamically set the exact start and end dates. These take precedence over the Period Entity.
 
 ## Development Workflow
 
