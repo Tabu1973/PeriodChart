@@ -5,6 +5,16 @@ A custom Lovelace card for Home Assistant that displays historical data (states/
 ![Beta Version](https://img.shields.io/badge/version-0.0.1--beta-orange.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
+## Screenshots
+
+<div style="display: flex; gap: 10px;">
+  <img src="images/detailed-line.png" width="45%" alt="Detailed Line Chart">
+  <img src="images/horizontal-bar.png" width="45%" alt="Horizontal Bar Chart">
+</div>
+<div>
+  <img src="images/clean-line.png" width="45%" alt="Clean Line Chart">
+</div>
+
 ## Features
 
 - **Fixed Time Periods:** Choose between days, weeks, months, or years.
