@@ -4,7 +4,6 @@ A custom Lovelace card for Home Assistant that displays historical data (states/
 
 ![Beta Version](https://img.shields.io/badge/version-0.0.1--beta-orange.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Tabu1973&repository=PeriodChart&category=plugin)
 
 ## Features
 
@@ -22,6 +21,8 @@ A custom Lovelace card for Home Assistant that displays historical data (states/
 - **Dynamic Entities:** Use Home Assistant helpers (e.g. `input_text`, `input_number`) to dynamically change colors and line widths from your dashboard without editing the card configuration.
 
 ## Installation
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Tabu1973&repository=PeriodChart&category=plugin)
 
 ### Via HACS (Home Assistant Community Store)
 *Note: As this is a beta release, you may need to add this repository as a custom repository in HACS.*
