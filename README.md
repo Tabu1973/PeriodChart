@@ -1,28 +1,67 @@
-# Fixed Period Chart
+# Fixed Period Chart for Home Assistant
 
-A Home Assistant lovelace custom card that displays a chart (via Chart.js) for a fixed period (this year, last year, this month, etc.). Uses Home Assistant's Long-Term Statistics.
+A custom Lovelace card for Home Assistant that displays historical data (states/attributes) over a fixed, customizable time period using Chart.js.
 
-## Installation via HACS
+![Beta Version](https://img.shields.io/badge/version-0.0.1--beta-orange.svg)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-1. Go to HACS -> Frontend
-2. Click the 3 dots in the top right corner and choose "Custom repositories"
-3. Add the URL of this repository and select category "Lovelace"
-4. Install "Fixed Period Chart"
-5. Add the resource `/hacsfiles/hacs-fixed-period-chart/fixed-period-chart.js` (HACS should do this automatically)
+## Features
 
-## Configuration
+- **Fixed Time Periods:** Choose between days, weeks, months, or years.
+- **Dynamic Time Navigation:** Provides forward/backward arrows to seamlessly jump between historical periods (e.g., jump from last month to this month).
+- **Custom Periods:** Define custom start and end dates via Home Assistant Entities (`input_datetime` or `input_select`).
+- **Visual Editor Support:** Full support for the Home Assistant UI Visual Editor. No YAML editing required (unless you want to).
+- **Multi-Entity Support:** Combine multiple sensors into a single chart.
+- **Customizable Appearance:**
+  - Support for Line, Bar, and Scatter charts.
+  - Fully customizable line styles (Solid, Dashed, Dotted), line smoothing, and data point visibility.
+  - Custom colors and transparency (opacity) with visual color picker.
+  - Configurable animations (Linear, Ease Out, Bounce, Elastic).
+  - Hide/Show X/Y Axes, Grid Lines, Legend, and Tooltips.
+- **Dynamic Entities:** Use Home Assistant helpers (e.g. `input_text`, `input_number`) to dynamically change colors and line widths from your dashboard without editing the card configuration.
 
-```yaml
-type: custom:fixed-period-chart
-entity: sensor.my_sensor
-period: this_year
-show_date_picker: true
-resolution: day
-```
+## Installation
 
-### Options
-- `entity`: Sensor entity ID that has long-term statistics
-- `period`: `this_year`, `last_year`, `this_month`, `last_month`, `today`
-- `resolution`: `5minute`, `hour`, `day` (Default: `day`)
-- `show_date_picker`: `true` or `false`
-- `start_entity` / `end_entity`: Advanced usage to bind start and end date to Home Assistant `input_datetime` helpers instead of a fixed period.
+### Via HACS (Home Assistant Community Store)
+*Note: As this is a beta release, you may need to add this repository as a custom repository in HACS.*
+
+1. Go to HACS -> Frontend.
+2. Click the three dots in the top right corner and select **Custom repositories**.
+3. Add the URL of this GitHub repository and select **Lovelace** as the category.
+4. Click Add.
+5. You should now see "Fixed Period Chart" in your HACS frontend list. Click it and select **Download**.
+6. Refresh your Home Assistant browser window.
+
+## Usage & Configuration
+
+Once installed, you can add the card via the visual Lovelace editor by searching for **Fixed Period Chart**.
+
+The Visual Editor is split into 5 intuitive sections:
+1. **Entities & Period:** Add your sensors, define their names, chart types (Bar/Line/Scatter), colors, and line widths. Choose the time period (Day, Week, Month, Year, Custom).
+2. **Time & Resolution:** Define how granular the data should be (e.g., group by hour or day) and which function to use (average, min, max, sum).
+3. **Appearance:** Set global colors (like the card background).
+4. **Display & Axes:** Toggle visibility of the legend, tooltips, axes, grid lines, and choose your animation easing effect.
+
+### Custom Period Control
+If you select **Custom** as your period, you can use Home Assistant helpers to control the time frame:
+- **Start / End Entity:** Map an `input_datetime` helper to dynamically set the exact start and end dates.
+- **Period Entity:** Map an `input_select` helper containing values like `1_month`, `1_year`, `7_days` to let users switch the time range via a dropdown menu in your dashboard.
+
+## Development Workflow
+
+If you want to contribute, add features, or fix bugs, it is highly recommended to develop locally:
+1. Install Git and clone this repository into your Home Assistant's `www` or `hacsfiles` folder.
+2. Run `npm install` to install dependencies.
+3. Use `npm run dev` to automatically compile `src/fixed-period-chart.js` into `dist/fixed-period-chart.js` whenever you make changes.
+4. Test your changes directly in your local Home Assistant instance. (Remember to add `?v=xxx` to your resource URL or clear your cache to see updates).
+5. Once your changes are stable, commit and push them to GitHub.
+
+## Open Source Credits & Licenses
+
+This project relies on the following incredible open-source libraries:
+- **[Chart.js](https://www.chartjs.org/)** - Licensed under the MIT License. Used for rendering the high-performance HTML5 canvas charts.
+- **[Lit](https://lit.dev/)** - Licensed under the BSD-3-Clause License. Used for building the fast, lightweight web components and the visual editor interface.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
