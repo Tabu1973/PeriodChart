@@ -74,7 +74,7 @@ If you want to contribute, add features, or fix bugs, it is highly recommended t
 1. Install Git and clone this repository into your Home Assistant's `www` or `hacsfiles` folder.
 2. Run `npm install` to install dependencies.
 3. Use `npm run dev` to automatically compile `src/fixed-period-chart.js` into `dist/fixed-period-chart.js` whenever you make changes.
-4. Test your changes directly in your local Home Assistant instance. (Remember to add `?v=xxx` to your resource URL or clear your cache to see updates).
+4. Test your changes directly in your local Home Assistant instance. *(Note for developers: Since you are bypassing HACS during local development, remember to manually clear your cache or add `?v=xxx` to your resource URL to see your code changes).*
 5. Once your changes are stable, commit and push them to GitHub.
 
 ## Open Source Credits & Licenses
