@@ -2,7 +2,7 @@
 
 A custom Lovelace card for Home Assistant that displays historical data (states/attributes) over a fixed, customizable time period using Chart.js.
 
-![Beta Version](https://img.shields.io/badge/version-0.0.1--beta-orange.svg)
+![Beta Version](https://img.shields.io/badge/version-0.0.2--beta-orange.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 ## Features
