@@ -2,7 +2,7 @@
 
 A custom Lovelace card for Home Assistant that displays historical data (states/attributes) over a fixed, customizable time period using Chart.js.
 
-![Beta Version](https://img.shields.io/badge/version-0.0.2--beta-orange.svg)
+![Beta Version](https://img.shields.io/badge/version-0.0.5b-orange.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 ## Features
@@ -38,7 +38,7 @@ A custom Lovelace card for Home Assistant that displays historical data (states/
 
 Once installed, you can add the card via the visual Lovelace editor by searching for **Fixed Period Chart**.
 
-The Visual Editor is split into 5 intuitive sections:
+You can use the variable {date_range} in the title (e.g., Pool Temperatur {date_range}) to dynamically display the currently selected start and end dates.\n\nThe Visual Editor is split into 5 intuitive sections:
 1. **Entities & Period:** Add your sensors, define their names, chart types (Bar/Line/Scatter), colors, and line widths. Choose the time period (Day, Week, Month, Year, Custom).
 2. **Time & Resolution:** Define how granular the data should be (e.g., group by hour or day) and which function to use (average, min, max, sum).
 3. **Appearance:** Set global colors (like the card background).

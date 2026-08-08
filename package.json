@@ -1,6 +1,6 @@
 {
   "name": "fixed-period-chart",
-  "version": "0.0.3",
+  "version": "0.0.5b",
   "type": "module",
   "description": "A custom Home Assistant card to display charts for a fixed time period",
   "main": "dist/fixed-period-chart.js",
