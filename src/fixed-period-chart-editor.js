@@ -64,10 +64,10 @@ class FixedPeriodChartEditor extends LitElement {
       delete newConfig.smoothing;
       delete newConfig.show_data_points;
       
-      this._config = newConfig;
+      this._config = { type: 'custom:fixed-period-chart', ...newConfig };
       fireEvent(this, 'config-changed', { config: this._config });
     } else {
-      this._config = config;
+      this._config = { type: 'custom:fixed-period-chart', ...config };
     }
   }
 
@@ -243,20 +243,46 @@ class FixedPeriodChartEditor extends LitElement {
     return html`
       <div class="card-config">
         
+        <div style="margin-bottom: 24px; background: var(--secondary-background-color); padding: 16px; border-radius: 8px; border: 1px solid var(--divider-color);">
+          <h3 style="margin-top: 0; margin-bottom: 16px;">Entitäten</h3>
+          ${this._entities.map((ent, index) => this._renderEntity(ent, index))}
+          <button class="add-entity-btn" style="margin-top: 8px;" @click=${this._addEntity}>+ Entität hinzufügen</button>
+        </div>
+
         <details class="config-section" open>
           <summary><h3>${this._localize('section.basic')}</h3></summary>
           
-          <div class="side-by-side">
-            <div>
-              <span class="label">${this._localize("label.title")}</span>
-              <input type="text" class="styled-input" .value=${this._title} @input=${(ev) => this._updateConfig('title', ev.target.value)}>
+          <div class="side-by-side" style="margin-top: 24px;">
+            <div style="width: 100%;">
+              ${this._renderTitleInput(`${this._localize("label.title")} (Standard)`, 'title')}
             </div>
           </div>
           
-          <div style="margin-top: 16px;">
-            <h4 style="margin-bottom: 8px;">Entitäten</h4>
-            ${this._entities.map((ent, index) => this._renderEntity(ent, index))}
-            <button class="add-entity-btn" @click=${this._addEntity}>+ Entität hinzufügen</button>
+          <div style="margin-top: 16px; border-bottom: 1px dashed var(--divider-color, #e0e0e0); padding-bottom: 12px;">
+            <span class="label" style="font-weight: bold; margin-bottom: 4px; display: block;">Tooltip Formatierung</span>
+            <span class="label" style="font-size: 12px; opacity: 0.8; margin-bottom: 8px; display: block;">Passe den Text an, der beim Hovern angezeigt wird. Standard: "{name}: {value} {unit}"</span>
+            <input type="text" id="title-input-tooltip_format" class="styled-input" .value=${this._config.tooltip_format || ''} @input=${(ev) => this._updateConfig('tooltip_format', ev.target.value)} placeholder="{name}: {value} {unit}">
+            <div class="template-chips" style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px;">
+              <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, 'tooltip_format', '{name}')}>+ Name</button>
+              <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, 'tooltip_format', '{value}')}>+ Wert</button>
+              <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, 'tooltip_format', '{unit}')}>+ Einheit</button>
+            </div>
+            
+            <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+              <span class="label">Kommastellen runden auf:</span>
+              <input type="number" class="styled-input" style="width: 80px;" min="0" max="5" .value=${this._config.tooltip_decimals !== undefined ? this._config.tooltip_decimals : ''} @input=${(ev) => this._updateConfig('tooltip_decimals', ev.target.value)} placeholder="Auto">
+            </div>
+
+            <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+              <div>
+                <span class="label" style="font-size: 11px;">Datumsformat Tooltip-Titel (Kurz <= 48h)</span>
+                <input type="text" class="styled-input" .value=${this._config.format_tooltip_date_short || ''} @input=${(ev) => this._updateConfig('format_tooltip_date_short', ev.target.value)} placeholder="HH:mm">
+              </div>
+              <div>
+                <span class="label" style="font-size: 11px;">Datumsformat Tooltip-Titel (Lang > 48h)</span>
+                <input type="text" class="styled-input" .value=${this._config.format_tooltip_date_long || ''} @input=${(ev) => this._updateConfig('format_tooltip_date_long', ev.target.value)} placeholder="DD.MM.YYYY HH:mm">
+              </div>
+            </div>
           </div>
         </details>
 
@@ -431,6 +457,28 @@ class FixedPeriodChartEditor extends LitElement {
           </div>
 
           <div class="side-by-side" style="margin-top: 16px;">
+            <div style="width: 100%;">
+              <span class="label" style="font-weight: bold; margin-bottom: 4px; display: block;">Individuelle Datums-Formatierung</span>
+              <span class="label" style="font-size: 12px; opacity: 0.8; margin-bottom: 8px; display: block;">Ersetze Standard-Datumsanzeigen (z.B. DD.MM.YYYY HH:mm)</span>
+              
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div>
+                  <span class="label" style="font-size: 11px;">Format X-Achse (Kurzer Zeitraum <= 48h)</span>
+                  <input type="text" class="styled-input" .value=${this._config.format_axis_short || ''} @input=${(ev) => this._updateConfig('format_axis_short', ev.target.value)} placeholder="HH:mm">
+                </div>
+                <div>
+                  <span class="label" style="font-size: 11px;">Format X-Achse (Langer Zeitraum > 48h)</span>
+                  <input type="text" class="styled-input" .value=${this._config.format_axis_long || ''} @input=${(ev) => this._updateConfig('format_axis_long', ev.target.value)} placeholder="DD.MM. HH:mm">
+                </div>
+                <div>
+                  <span class="label" style="font-size: 11px;">Format Titel ({date_range})</span>
+                  <input type="text" class="styled-input" .value=${this._config.format_title_date || ''} @input=${(ev) => this._updateConfig('format_title_date', ev.target.value)} placeholder="DD.MM.YYYY">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="side-by-side" style="margin-top: 16px;">
             <div>
               <span class="label">Animation Easing (Übergangseffekt)</span>
               <select class="styled-select" @change=${(ev) => this._updateConfig('animation_easing', ev.target.value)}>
@@ -480,6 +528,23 @@ class FixedPeriodChartEditor extends LitElement {
     `;
   }
 
+  _renderTitleInput(label, key, placeholder = '') {
+    const val = key === 'title' ? this._title : (this._config?.[key] || '');
+    return html`
+      <div style="margin-top: 12px; border-bottom: 1px dashed var(--divider-color, #e0e0e0); padding-bottom: 12px;">
+        <span class="label">${label}</span>
+        <input type="text" id="title-input-${key}" class="styled-input" .value=${val} @input=${(ev) => this._updateConfig(key, ev.target.value)} placeholder=${placeholder}>
+        <div class="template-chips" style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px;">
+          <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{start_date}')}>+ Start Datum</button>
+          <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{end_date}')}>+ End Datum</button>
+          <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{date_range}')}>+ Von/Bis Datum</button>
+          <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{start_time}')}>+ Start Zeit</button>
+          <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{end_time}')}>+ End Zeit</button>
+        </div>
+      </div>
+    `;
+  }
+
   _renderEntity(ent, index) {
     const isExpanded = this._expandedEntity === index;
     const chartType = ent.chart_type || 'bar';
@@ -522,22 +587,88 @@ class FixedPeriodChartEditor extends LitElement {
                 <span class="label">${this._localize("label.legend_label")}</span>
                 <input type="text" class="styled-input" .value=${ent.legend_label || ''} @input=${(ev) => this._updateEntityConfig(index, 'legend_label', ev.target.value)}>
               </div>
-              <div>
-                <span class="label">${this._localize("label.chart_type")}</span>
-                <select class="styled-select" @change=${(ev) => this._updateEntityConfig(index, 'chart_type', ev.target.value)}>
-                  <option value="bar" ?selected=${chartType === 'bar'}>${this._localize("type.bar")}</option>
-                  <option value="line" ?selected=${chartType === 'line'}>${this._localize("type.line")}</option>
-                  <option value="scatter" ?selected=${chartType === 'scatter'}>Punkte (Scatter)</option>
-                </select>
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span class="label" style="margin: 0;">${this._localize("label.chart_type")}</span>
+                  <ha-formfield .label=${this._localize("label.dynamic")}>
+                    <ha-switch
+                      .checked=${!!ent.use_dynamic_chart_type}
+                      @change=${(ev) => this._updateEntityConfig(index, 'use_dynamic_chart_type', ev.target.checked)}
+                    ></ha-switch>
+                  </ha-formfield>
+                </div>
+                
+                ${ent.use_dynamic_chart_type ? html`
+                  <ha-entity-picker
+                    .label=${"Diagramm-Typ Entity (z.B. input_select)"}
+                    .hass=${this.hass}
+                    .value=${ent.chart_type_entity || ''}
+                    @value-changed=${(ev) => this._updateEntityConfig(index, 'chart_type_entity', ev.detail.value)}
+                    allow-custom-entity
+                  ></ha-entity-picker>
+                ` : html`
+                  <select class="styled-select" @change=${(ev) => this._updateEntityConfig(index, 'chart_type', ev.target.value)}>
+                    <option value="bar" ?selected=${chartType === 'bar'}>${this._localize("type.bar")}</option>
+                    <option value="line" ?selected=${chartType === 'line'}>${this._localize("type.line")}</option>
+                    <option value="scatter" ?selected=${chartType === 'scatter'}>Punkte (Scatter)</option>
+                  </select>
+                `}
               </div>
             </div>
 
-            <div class="side-by-side" style="margin-top: 16px;">
-              ${this.renderEntityColorPicker(this._localize("color.line_bar"), "color", ent, index)}
+            ${chartType === 'bar' || ent.use_dynamic_chart_type ? html`
+              <div class="side-by-side" style="margin-top: 16px;">
+                <div style="flex: 1;">
+                  <span class="label">Balken-Modus (Min/Max Optionen)</span>
+                  <select class="styled-select" @change=${(ev) => {
+                    this._updateEntityConfig(index, 'bar_mode', ev.target.value);
+                    if (ent.use_min_max !== undefined) {
+                      const newConfig = [...this._entities];
+                      delete newConfig[index].use_min_max;
+                      this._updateConfig('entities', newConfig);
+                    }
+                  }}>
+                    <option value="standard" ?selected=${!ent.bar_mode && !ent.use_min_max}>Standard (Mittelwert/Zustand)</option>
+                    <option value="floating" ?selected=${ent.bar_mode === 'floating' || ent.use_min_max}>Floating Bar (Min-Max Spanne)</option>
+                    <option value="stacked" ?selected=${ent.bar_mode === 'stacked'}>Stacked Bar (Gestapelt, Min & Max)</option>
+                  </select>
+                </div>
+              </div>
+            ` : ''}
+
+            <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 16px;">
+              ${(chartType === 'line' || chartType === 'scatter' || (chartType === 'bar' && (!ent.bar_mode || ent.bar_mode === 'standard' && !ent.use_min_max)) || ent.use_dynamic_chart_type) ? html`
+                <span class="label" style="font-weight: bold; margin-bottom: -8px;">Standard-Farben (Linie / normaler Balken)</span>
+                ${this.renderEntityColorPicker(this._localize("color.line_bar") || "Linien- / Rahmenfarbe", "color", ent, index)}
+                ${this.renderEntityColorPicker(this._localize("color.background") || "Hintergrund- / Füllfarbe", "bg_color", ent, index)}
+              ` : ''}
+              
+              ${(ent.bar_mode === 'stacked' || ent.bar_mode === 'floating' || ent.use_min_max || ent.use_dynamic_chart_type) ? html`
+                <div style="margin-top: 8px; border-top: 1px dashed var(--divider-color, #e0e0e0); padding-top: 12px; display: flex; flex-direction: column; gap: 16px;">
+                  <span class="label" style="font-weight: bold; margin-bottom: 0;">Farben für Min/Max-Diagramme (Max / oberer Bereich)</span>
+                  ${this.renderEntityColorPicker("Linien- / Rahmenfarbe (Max)", "color_max", ent, index)}
+                  ${this.renderEntityColorPicker("Hintergrund- / Füllfarbe (Max)", "bg_color_max", ent, index)}
+                  
+                  <span class="label" style="font-weight: bold; margin-bottom: 0; margin-top: 8px;">Farben für Min/Max-Diagramme (Min / unterer Bereich)</span>
+                  ${this.renderEntityColorPicker("Linien- / Rahmenfarbe (Min)", "color_min", ent, index)}
+                  ${this.renderEntityColorPicker("Hintergrund- / Füllfarbe (Min)", "bg_color_min", ent, index)}
+                </div>
+              ` : ''}
             </div>
             
-            <div class="side-by-side" style="margin-top: 16px;">
-              ${this.renderEntityColorPicker(this._localize("color.fill"), "bg_color", ent, index)}
+            <div style="margin-top: 16px; border-top: 1px dashed var(--divider-color, #e0e0e0); padding-top: 12px;">
+              <span class="label" style="font-weight: bold; margin-bottom: 4px; display: block;">Individueller Tooltip (optional)</span>
+              <span class="label" style="font-size: 12px; opacity: 0.8; margin-bottom: 8px; display: block;">Überschreibt das globale Tooltip-Format für diese Entität.</span>
+              <input type="text" class="styled-input" .value=${ent.tooltip_format || ''} @input=${(ev) => this._updateEntityConfig(index, 'tooltip_format', ev.target.value)} placeholder="{name}: {value} {unit}">
+              <div class="template-chips" style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px;">
+                <button class="chip-btn" @click=${(ev) => this._insertTemplateEntity(ev, index, 'tooltip_format', '{name}')}>+ Name</button>
+                <button class="chip-btn" @click=${(ev) => this._insertTemplateEntity(ev, index, 'tooltip_format', '{value}')}>+ Wert</button>
+                <button class="chip-btn" @click=${(ev) => this._insertTemplateEntity(ev, index, 'tooltip_format', '{unit}')}>+ Einheit</button>
+              </div>
+              <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+                <span class="label">Kommastellen:</span>
+                <input type="number" class="styled-input" style="width: 80px;" min="0" max="5" .value=${ent.tooltip_decimals !== undefined ? ent.tooltip_decimals : ''} @input=${(ev) => this._updateEntityConfig(index, 'tooltip_decimals', ev.target.value)} placeholder="Auto">
+              </div>
             </div>
 
             <div class="side-by-side" style="margin-top: 16px;">
@@ -568,7 +699,7 @@ class FixedPeriodChartEditor extends LitElement {
               </div>
             ` : ''}
 
-            ${chartType === 'line' ? html`
+            ${chartType === 'line' || ent.use_dynamic_chart_type ? html`
               <div class="side-by-side" style="margin-top: 16px;">
                 <ha-formfield .label=${this._localize("label.smooth_lines")}>
                   <ha-switch
@@ -761,15 +892,55 @@ class FixedPeriodChartEditor extends LitElement {
     if (value === '' || value === undefined) {
       const tmpConfig = { ...this._config };
       delete tmpConfig[key];
-      this._config = tmpConfig;
+      this._config = { type: 'custom:fixed-period-chart', ...tmpConfig };
     } else {
       this._config = {
+        type: 'custom:fixed-period-chart',
         ...this._config,
         [key]: value
       };
     }
     
     fireEvent(this, 'config-changed', { config: this._config });
+  }
+
+  _insertTemplate(ev, key, template) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    
+    const input = this.shadowRoot.querySelector(`#title-input-${key}`);
+    const currentVal = (this._config && this._config[key]) ? this._config[key] : (key === 'title' ? this._title : '');
+    
+    if (!input) {
+      this._updateConfig(key, currentVal + template);
+      return;
+    }
+    
+    const start = input.selectionStart || 0;
+    const end = input.selectionEnd || 0;
+    const val = input.value || '';
+    const newVal = val.slice(0, start) + template + val.slice(end);
+    
+    this._updateConfig(key, newVal);
+    
+    setTimeout(() => {
+      if (input && typeof input.setSelectionRange === 'function') {
+        input.focus();
+        input.setSelectionRange(start + template.length, start + template.length);
+      }
+    }, 10);
+  }
+
+  _insertTemplateEntity(ev, index, key, template) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    
+    // Wir machen das hier einfach, indem wir es an den aktuellen Wert anhängen, da wir keine eindeutigen IDs für alle Entitäts-Inputs haben
+    const ent = this._entities[index];
+    const currentVal = ent[key] || '';
+    const newVal = currentVal + template;
+    
+    this._updateEntityConfig(index, key, newVal);
   }
 
   static get styles() {
@@ -798,15 +969,29 @@ class FixedPeriodChartEditor extends LitElement {
         cursor: pointer;
         font-size: 14px;
         color: var(--secondary-text-color);
-        padding: 4px 8px;
-        border-radius: 4px;
+        padding: 4px;
+        border-radius: 50%;
       }
       .icon-btn:hover {
         background: rgba(var(--rgb-primary-text-color), 0.05);
       }
-      .remove-btn:hover {
+      .remove-btn {
         color: var(--error-color, #f44336);
+      }
+      .remove-btn:hover {
         background: rgba(244, 67, 54, 0.1);
+      }
+      .chip-btn {
+        background: var(--secondary-background-color, #e5e5e5);
+        border: 1px solid var(--divider-color, #e0e0e0);
+        border-radius: 12px;
+        padding: 2px 8px;
+        font-size: 11px;
+        cursor: pointer;
+        color: var(--primary-text-color);
+      }
+      .chip-btn:hover {
+        background: rgba(var(--rgb-primary-text-color), 0.1);
       }
       .add-entity-btn {
         background: none;

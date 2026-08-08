@@ -56,6 +56,7 @@ class FixedPeriodChart extends LitElement {
 
   static getStubConfig() {
     return {
+      type: 'custom:fixed-period-chart',
       entities: [{ entity: '' }],
       period: 'this_year',
       resolution: 'day',
@@ -138,6 +139,49 @@ class FixedPeriodChart extends LitElement {
       resolution = this.hass.states[this.config.resolution_entity].state;
     }
 
+    // Helper to evaluate dynamic chart type
+    const getDynamicChartInfo = (e) => {
+      let cType = e.chart_type || 'bar';
+      let bMode = e.bar_mode || (e.use_min_max ? 'floating' : 'standard');
+      if (e.use_dynamic_chart_type && e.chart_type_entity && this.hass.states[e.chart_type_entity]) {
+        const dynType = this.hass.states[e.chart_type_entity].state;
+        if (['line', 'bar', 'scatter'].includes(dynType)) {
+          cType = dynType;
+          bMode = 'standard';
+        } else if (dynType === 'floating_bar') {
+          cType = 'bar';
+          bMode = 'floating';
+        } else if (dynType === 'stacked_bar') {
+          cType = 'bar';
+          bMode = 'stacked';
+        }
+      }
+      return { cType, bMode };
+    };
+
+    const durationDays = (start && end) ? (end.getTime() - start.getTime()) / (1000 * 3600 * 24) : 0;
+
+    // Floating Bars (Min/Max) machen nur bei einer Auflösung von mind. 'day' Sinn
+    const hasMinMax = this._entities && this._entities.some(e => {
+      const info = getDynamicChartInfo(e);
+      return info.cType === 'bar' && (info.bMode === 'floating' || info.bMode === 'stacked');
+    });
+    
+    const hasStandardBar = this._entities && this._entities.some(e => {
+      const info = getDynamicChartInfo(e);
+      return info.cType === 'bar' && info.bMode === 'standard';
+    });
+    
+    if (hasMinMax && (resolution === '5minute' || resolution === 'hour' || resolution === 'auto')) {
+      resolution = 'day';
+    } else if (hasStandardBar) {
+      if (durationDays > 31 && (resolution === '5minute' || resolution === 'hour' || resolution === 'auto')) {
+        resolution = 'day';
+      } else if (durationDays > 3 && (resolution === '5minute' || resolution === 'auto')) {
+        resolution = 'hour';
+      }
+    }
+
     let visualConfigChanged = false;
     
     let card_bg_color = this.config.card_bg_color;
@@ -151,11 +195,16 @@ class FixedPeriodChart extends LitElement {
     
     // Evaluate if entity styles changed
     const entities = this._entities;
-    const currentEntityStyles = JSON.stringify(entities.map(e => ({
-      color: e.use_dynamic_color && e.color_entity && this.hass.states[e.color_entity] ? this.hass.states[e.color_entity].state : e.color,
-      bg_color: e.use_dynamic_bg_color && e.bg_color_entity && this.hass.states[e.bg_color_entity] ? this.hass.states[e.bg_color_entity].state : e.bg_color,
-      width: e.use_dynamic_line_width && e.line_width_entity && this.hass.states[e.line_width_entity] ? this.hass.states[e.line_width_entity].state : e.line_width
-    })));
+    const currentEntityStyles = JSON.stringify(entities.map(e => {
+      const info = getDynamicChartInfo(e);
+      return {
+        cType: info.cType,
+        bMode: info.bMode,
+        color: e.use_dynamic_color && e.color_entity && this.hass.states[e.color_entity] ? this.hass.states[e.color_entity].state : e.color,
+        bg_color: e.use_dynamic_bg_color && e.bg_color_entity && this.hass.states[e.bg_color_entity] ? this.hass.states[e.bg_color_entity].state : e.bg_color,
+        width: e.use_dynamic_line_width && e.line_width_entity && this.hass.states[e.line_width_entity] ? this.hass.states[e.line_width_entity].state : e.line_width
+      };
+    }));
 
     if (this._currentEntityStyles !== currentEntityStyles) {
       this._currentEntityStyles = currentEntityStyles;
@@ -169,16 +218,27 @@ class FixedPeriodChart extends LitElement {
       
       const currentHash = JSON.stringify(entities.map(e => e.entity));
       const hashChanged = this._entitiesHash !== currentHash;
+      const periodChanged = this._currentPeriod !== periodToUse;
 
-      if (startChanged || endChanged || resChanged || hashChanged) {
-        console.log(`[FixedPeriodChart][${this._instanceId}] Fetching because: startChanged=${startChanged}, endChanged=${endChanged}, resChanged=${resChanged}, hashChanged=${hashChanged}. OldHash: ${this._entitiesHash}, NewHash: ${currentHash}`);
+      if (visualConfigChanged || startChanged || endChanged || resChanged || hashChanged || periodChanged) {
         this._currentStart = start;
         this._currentEnd = end;
         this._currentResolution = resolution;
         this._entitiesHash = currentHash;
-        await this.fetchData(start, end, resolution);
-      } else if (visualConfigChanged && this.chartDatasets.length > 0) {
-        this.renderChart();
+        this._currentPeriod = periodToUse;
+
+        const needsFetch = startChanged || endChanged || resChanged || hashChanged || periodChanged;
+
+        if (needsFetch) {
+          // Data actually changed - re-fetch from HA
+          this._isLoading = true;
+          this.requestUpdate();
+          await this.fetchData(start, end, resolution);
+        } else if (visualConfigChanged && this.chartDatasets.length > 0) {
+          // Only visual config changed (chart type, colors, etc.) - just re-render
+          this._lastRenderConfig = null; // force full chart rebuild
+          this.renderChart();
+        }
       }
     }
   }
@@ -215,26 +275,39 @@ class FixedPeriodChart extends LitElement {
       const entityData = {};
 
       validEntities.forEach(entityId => {
+
         const data = response[entityId] || [];
+        
         entityData[entityId] = data.map(point => {
           allTimestamps.add(point.start);
-          return {
-            start: point.start,
-            value: point.state !== undefined ? point.state : (point.mean !== undefined ? point.mean : point.sum)
-          };
+          return point;
         });
       });
 
       const sortedTimestamps = Array.from(allTimestamps).sort((a, b) => a - b);
       
+      const durationMs = end.getTime() - start.getTime();
+      const isShortPeriod = durationMs <= (48 * 60 * 60 * 1000);
+      const formatShort = this.config.format_axis_short || 'HH:mm';
+      const formatLong = this.config.format_axis_long || 'DD.MM. HH:mm';
+      const formatTooltipShort = this.config.format_tooltip_date_short || 'HH:mm';
+      const formatTooltipLong = this.config.format_tooltip_date_long || 'DD.MM.YYYY HH:mm';
+
+      this.chartFullLabels = [];
       this.chartLabels = sortedTimestamps.map(ts => {
         const d = new Date(ts);
-        return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const fullStr = isShortPeriod ? this._formatDate(d, formatTooltipShort) : this._formatDate(d, formatTooltipLong);
+        this.chartFullLabels.push(fullStr);
+        
+        if (isShortPeriod) {
+          return this._formatDate(d, formatShort);
+        }
+        return this._formatDate(d, formatLong);
       });
 
       this.chartDatasets = entities.map(ent => {
         if (!ent.entity || !entityData[ent.entity]) return [];
-        const dataMap = new Map(entityData[ent.entity].map(d => [d.start, d.value]));
+        const dataMap = new Map(entityData[ent.entity].map(d => [d.start, d]));
         return sortedTimestamps.map(ts => dataMap.has(ts) ? dataMap.get(ts) : null);
       });
       
@@ -260,11 +333,27 @@ class FixedPeriodChart extends LitElement {
     
     // Evaluate if entity styles changed
     const entities = this._entities;
-    const currentEntityStyles = entities.map(e => ({
-      color: e.use_dynamic_color && e.color_entity && this.hass.states[e.color_entity] ? this.hass.states[e.color_entity].state : e.color,
-      bg_color: e.use_dynamic_bg_color && e.bg_color_entity && this.hass.states[e.bg_color_entity] ? this.hass.states[e.bg_color_entity].state : e.bg_color,
-      width: e.use_dynamic_line_width && e.line_width_entity && this.hass.states[e.line_width_entity] ? this.hass.states[e.line_width_entity].state : e.line_width
-    }));
+    const currentEntityStyles = entities.map(e => {
+      let cType = e.chart_type || 'bar';
+      let bMode = e.bar_mode || (e.use_min_max ? 'floating' : 'standard');
+      if (e.use_dynamic_chart_type && e.chart_type_entity && this.hass.states[e.chart_type_entity]) {
+        const dynType = this.hass.states[e.chart_type_entity].state;
+        if (['line', 'bar', 'scatter'].includes(dynType)) {
+          cType = dynType; bMode = 'standard';
+        } else if (dynType === 'floating_bar') {
+          cType = 'bar'; bMode = 'floating';
+        } else if (dynType === 'stacked_bar') {
+          cType = 'bar'; bMode = 'stacked';
+        }
+      }
+      return {
+        cType,
+        bMode,
+        color: e.use_dynamic_color && e.color_entity && this.hass.states[e.color_entity] ? this.hass.states[e.color_entity].state : e.color,
+        bg_color: e.use_dynamic_bg_color && e.bg_color_entity && this.hass.states[e.bg_color_entity] ? this.hass.states[e.bg_color_entity].state : e.bg_color,
+        width: e.use_dynamic_line_width && e.line_width_entity && this.hass.states[e.line_width_entity] ? this.hass.states[e.line_width_entity].state : e.line_width
+      };
+    });
 
     const configStr = JSON.stringify({ 
       v: visualConfig, 
@@ -272,7 +361,7 @@ class FixedPeriodChart extends LitElement {
       d: this.hass.themes.darkMode 
     });
 
-    const datasets = entities.map((ent, idx) => {
+    const datasets = entities.flatMap((ent, idx) => {
       let color = ent.color;
       if (ent.use_dynamic_color && ent.color_entity && this.hass.states[ent.color_entity]) {
         color = this.hass.states[ent.color_entity].state;
@@ -288,20 +377,92 @@ class FixedPeriodChart extends LitElement {
         line_width = this.hass.states[ent.line_width_entity].state;
       }
 
-      return {
+      let unit = '';
+      if (this.hass.states[ent.entity] && this.hass.states[ent.entity].attributes.unit_of_measurement) {
+        unit = this.hass.states[ent.entity].attributes.unit_of_measurement;
+      }
+      
+      let cType = ent.chart_type || 'bar';
+      let bMode = ent.bar_mode || (ent.use_min_max ? 'floating' : 'standard');
+      if (ent.use_dynamic_chart_type && ent.chart_type_entity && this.hass.states[ent.chart_type_entity]) {
+        const dynType = this.hass.states[ent.chart_type_entity].state;
+        if (['line', 'bar', 'scatter'].includes(dynType)) {
+          cType = dynType; bMode = 'standard';
+        } else if (dynType === 'floating_bar') {
+          cType = 'bar'; bMode = 'floating';
+        } else if (dynType === 'stacked_bar') {
+          cType = 'bar'; bMode = 'stacked';
+        }
+      }
+      
+      const baseDataset = {
         label: ent.legend_label || ent.entity,
-        data: this.chartDatasets[idx] || [],
-        backgroundColor: bg_color || color || 'rgba(54, 162, 235, 0.5)',
-        borderColor: color || 'rgba(54, 162, 235, 1)',
-        borderWidth: line_width ? Number(line_width) : (ent.chart_type === 'line' ? 2 : (ent.chart_type === 'scatter' ? 0 : 1)),
+        unit: unit,
+        tooltip_format: ent.tooltip_format,
+        tooltip_decimals: ent.tooltip_decimals,
+        borderWidth: line_width ? Number(line_width) : (cType === 'line' ? 2 : (cType === 'scatter' ? 0 : 1)),
         tension: ent.smoothing ? 0.4 : 0,
-        fill: ent.chart_type === 'line' ? (!!bg_color) : true, 
-        pointRadius: ent.show_data_points === false ? 0 : (ent.chart_type === 'scatter' ? 4 : 3),
-        pointHoverRadius: ent.show_data_points === false ? 5 : (ent.chart_type === 'scatter' ? 6 : 4),
-        showLine: ent.chart_type !== 'scatter',
+        pointRadius: ent.show_data_points === false ? 0 : (cType === 'scatter' ? 4 : 3),
+        pointHoverRadius: ent.show_data_points === false ? 5 : (cType === 'scatter' ? 6 : 4),
+        showLine: cType !== 'scatter',
         borderDash: ent.line_style === 'dashed' ? [5, 5] : (ent.line_style === 'dotted' ? [2, 3] : []),
-        type: ent.chart_type === 'scatter' ? 'line' : (ent.chart_type || 'bar')
+        type: cType === 'scatter' ? 'line' : (cType || 'bar'),
+        minBarLength: 2,
+        borderSkipped: false
       };
+
+      const rawPoints = this.chartDatasets[idx] || [];
+      const useMinMax = (cType === 'bar' && (bMode === 'floating' || bMode === 'stacked'));
+      
+      const rawData = rawPoints.map(point => {
+        if (!point) return null;
+        if (useMinMax && point.min !== undefined && point.max !== undefined) {
+          return [Number(point.min), Number(point.max)];
+        } else {
+          let val = point.state !== undefined ? point.state : (point.mean !== undefined ? point.mean : point.sum);
+          return val !== null ? Number(val) : null;
+        }
+      });
+      
+      const isFloatingOrStacked = cType === 'bar' && (bMode === 'floating' || bMode === 'stacked');
+      const maxColor = ent.color_max || 'rgba(255, 99, 132, 1)';
+      const maxBgColor = ent.bg_color_max || 'rgba(255, 99, 132, 0.5)';
+      const minColor = ent.color_min || 'rgba(54, 162, 235, 1)';
+      const minBgColor = ent.bg_color_min || 'rgba(54, 162, 235, 0.5)';
+      const stdColor = color || 'rgba(54, 162, 235, 1)';
+      const stdBgColor = bg_color || color || 'rgba(54, 162, 235, 0.5)';
+
+      if (cType === 'bar' && bMode === 'stacked') {
+        const dataMin = rawData.map(v => Array.isArray(v) ? [0, v[0]] : null);
+        const dataMax = rawData.map(v => Array.isArray(v) ? [v[0], v[1]] : null);
+        return [
+          {
+            ...baseDataset,
+            data: dataMin,
+            backgroundColor: minBgColor,
+            borderColor: minColor,
+            fill: true,
+            grouped: false
+          },
+          {
+            ...baseDataset,
+            label: (ent.legend_label || ent.entity) + ' (Max)', // Different label for tooltip
+            data: dataMax,
+            backgroundColor: maxBgColor,
+            borderColor: maxColor,
+            fill: true,
+            grouped: false
+          }
+        ];
+      }
+      
+      return [{
+        ...baseDataset,
+        data: rawData,
+        backgroundColor: isFloatingOrStacked ? maxBgColor : stdBgColor,
+        borderColor: isFloatingOrStacked ? maxColor : stdColor,
+        fill: cType === 'line' ? (!!bg_color) : true
+      }];
     });
 
     if (this.chart && this._lastRenderConfig === configStr) {
@@ -312,16 +473,21 @@ class FixedPeriodChart extends LitElement {
     }
 
     let canvas = chartContainer.querySelector('canvas');
+    if (this.chart) {
+      this.chart.destroy();
+      this.chart = null;
+      if (canvas) {
+        canvas.remove();
+        canvas = null;
+      }
+    }
+    
     if (!canvas) {
       canvas = document.createElement('canvas');
       chartContainer.innerHTML = '';
       chartContainer.appendChild(canvas);
     }
 
-    if (this.chart) {
-      this.chart.destroy();
-      this.chart = null;
-    }
 
     this._lastRenderConfig = configStr;
 
@@ -340,6 +506,7 @@ class FixedPeriodChart extends LitElement {
     let chartScales = this.config.horizontal ? { x: valueScale, y: categoryScale } : { x: categoryScale, y: valueScale };
 
     this.chart = new Chart(canvas, {
+      type: datasets.length > 0 ? datasets[0].type : 'bar',
       data: {
         labels: this.chartLabels,
         datasets: datasets
@@ -348,6 +515,10 @@ class FixedPeriodChart extends LitElement {
         indexAxis: this.config.horizontal ? 'y' : 'x',
         responsive: true,
         maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
         animation: {
           duration: 400,
           easing: this.config.animation_easing || 'easeOutQuart'
@@ -388,11 +559,111 @@ class FixedPeriodChart extends LitElement {
             labels: { color: this.hass.themes.darkMode ? '#fff' : '#666' }
           },
           tooltip: {
-            enabled: this.config.show_tooltip !== false
+            enabled: this.config.show_tooltip !== false,
+            bodySpacing: 8,
+            titleSpacing: 8,
+            padding: 12,
+            callbacks: {
+              title: (tooltipItems) => {
+                if (this.chartFullLabels && tooltipItems.length > 0) {
+                  return this.chartFullLabels[tooltipItems[0].dataIndex];
+                }
+                return tooltipItems[0].label;
+              },
+              label: (tooltipItem) => {
+                const dataset = tooltipItem.dataset;
+                let value = tooltipItem.formattedValue;
+                const rawVal = tooltipItem.raw;
+                
+                const decimalsConfig = dataset.tooltip_decimals !== undefined && dataset.tooltip_decimals !== '' ? dataset.tooltip_decimals : this.config.tooltip_decimals;
+                
+                if (Array.isArray(rawVal)) {
+                  if (rawVal[0] === 0) {
+                    // This is the Min part of a stacked bar
+                    if (decimalsConfig !== undefined && decimalsConfig !== '') {
+                      const decimals = Number(decimalsConfig);
+                      value = rawVal[1].toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+                    } else {
+                      value = String(rawVal[1]);
+                    }
+                  } else {
+                    // This is the Max part of a stacked bar, or a floating bar
+                    const isStacked = dataset.label && dataset.label.endsWith('(Max)');
+                    if (decimalsConfig !== undefined && decimalsConfig !== '') {
+                      const decimals = Number(decimalsConfig);
+                      const minStr = rawVal[0].toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+                      const maxStr = rawVal[1].toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+                      value = isStacked ? maxStr : `${minStr} bis ${maxStr}`;
+                    } else {
+                      value = isStacked ? String(rawVal[1]) : `${rawVal[0]} bis ${rawVal[1]}`;
+                    }
+                  }
+                } else if (typeof rawVal === 'number' && decimalsConfig !== undefined && decimalsConfig !== '') {
+                  const decimals = Number(decimalsConfig);
+                  value = rawVal.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+                }
+                
+                const name = dataset.label;
+                const unit = dataset.unit || '';
+                
+                let format = dataset.tooltip_format || this.config.tooltip_format;
+                if (!format) {
+                   return `${name}: ${value} ${unit}`.trim();
+                }
+                
+                return format
+                  .replace(/{name}/g, name)
+                  .replace(/{value}/g, value)
+                  .replace(/{unit}/g, unit);
+              }
+            }
           }
         }
       }
     });
+  }
+
+  get _renderedTitle() {
+    let title = this.config.title || '';
+    if (!title || !this._currentStart || !this._currentEnd) return title;
+    
+    if (title.includes('{date_range}')) {
+      const s = new Date(this._currentStart);
+      const e = new Date(this._currentEnd);
+      const formatStr = this.config.format_title_date || 'DD.MM.YYYY';
+      
+      const sStr = this._formatDate(s, formatStr);
+      const eStr = this._formatDate(e, formatStr);
+      
+      const dateRange = (sStr === eStr) ? sStr : `${sStr} - ${eStr}`;
+      title = title.replace('{date_range}', dateRange);
+    }
+    
+    return title;
+  }
+
+  _formatDate(date, format) {
+    const map = {
+      'YYYY': date.getFullYear(),
+      'YY': String(date.getFullYear()).slice(-2),
+      'MM': String(date.getMonth() + 1).padStart(2, '0'),
+      'M': date.getMonth() + 1,
+      'DD': String(date.getDate()).padStart(2, '0'),
+      'D': date.getDate(),
+      'HH': String(date.getHours()).padStart(2, '0'),
+      'H': date.getHours(),
+      'mm': String(date.getMinutes()).padStart(2, '0'),
+      'm': date.getMinutes(),
+      'ss': String(date.getSeconds()).padStart(2, '0'),
+      's': date.getSeconds()
+    };
+    
+    const tokens = Object.keys(map).sort((a, b) => b.length - a.length);
+    let result = format;
+    for (const token of tokens) {
+      result = result.replace(new RegExp(token, 'g'), map[token]);
+    }
+    return result;
   }
 
   render() {
@@ -403,7 +674,7 @@ class FixedPeriodChart extends LitElement {
         ${this.config.title || this.config.show_navigation ? html`
           <div class="card-header-custom">
             ${this.config.show_navigation ? html`<ha-icon-button .path=${"M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"} @click=${() => this.navigateTime(-1)}></ha-icon-button>` : ''}
-            <h1 class="card-title">${this.config.title || ''}</h1>
+            <h1 class="card-title">${this._renderedTitle}</h1>
             ${this.config.show_navigation ? html`<ha-icon-button .path=${"M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"} @click=${() => this.navigateTime(1)}></ha-icon-button>` : ''}
           </div>
         ` : ''}
