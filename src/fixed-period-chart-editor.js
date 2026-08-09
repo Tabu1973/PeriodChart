@@ -244,9 +244,9 @@ class FixedPeriodChartEditor extends LitElement {
       <div class="card-config">
         
         <div style="margin-bottom: 24px; background: var(--secondary-background-color); padding: 16px; border-radius: 8px; border: 1px solid var(--divider-color);">
-          <h3 style="margin-top: 0; margin-bottom: 16px;">Entitäten</h3>
+          <h3 style="margin-top: 0; margin-bottom: 16px;">${this._localize("label.entities_header")}</h3>
           ${this._entities.map((ent, index) => this._renderEntity(ent, index))}
-          <button class="add-entity-btn" style="margin-top: 8px;" @click=${this._addEntity}>+ Entität hinzufügen</button>
+          <button class="add-entity-btn" style="margin-top: 8px;" @click=${this._addEntity}>${this._localize("btn.add_entity")}</button>
         </div>
 
         <details class="config-section" open>
@@ -259,27 +259,27 @@ class FixedPeriodChartEditor extends LitElement {
           </div>
           
           <div style="margin-top: 16px; border-bottom: 1px dashed var(--divider-color, #e0e0e0); padding-bottom: 12px;">
-            <span class="label" style="font-weight: bold; margin-bottom: 4px; display: block;">Tooltip Formatierung</span>
-            <span class="label" style="font-size: 12px; opacity: 0.8; margin-bottom: 8px; display: block;">Passe den Text an, der beim Hovern angezeigt wird. Standard: "{name}: {value} {unit}"</span>
+            <span class="label" style="font-weight: bold; margin-bottom: 4px; display: block;">${this._localize("label.tooltip_format")}</span>
+            <span class="label" style="font-size: 12px; opacity: 0.8; margin-bottom: 8px; display: block;">${this._localize("desc.tooltip_format")}</span>
             <input type="text" id="title-input-tooltip_format" class="styled-input" .value=${this._config.tooltip_format || ''} @input=${(ev) => this._updateConfig('tooltip_format', ev.target.value)} placeholder="{name}: {value} {unit}">
             <div class="template-chips" style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px;">
-              <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, 'tooltip_format', '{name}')}>+ Name</button>
-              <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, 'tooltip_format', '{value}')}>+ Wert</button>
-              <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, 'tooltip_format', '{unit}')}>+ Einheit</button>
+              <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, 'tooltip_format', '{name}')}>${this._localize("btn.add_name")}</button>
+              <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, 'tooltip_format', '{value}')}>${this._localize("btn.add_value")}</button>
+              <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, 'tooltip_format', '{unit}')}>${this._localize("btn.add_unit")}</button>
             </div>
             
             <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
-              <span class="label">Kommastellen runden auf:</span>
-              <input type="number" class="styled-input" style="width: 80px;" min="0" max="5" .value=${this._config.tooltip_decimals !== undefined ? this._config.tooltip_decimals : ''} @input=${(ev) => this._updateConfig('tooltip_decimals', ev.target.value)} placeholder="Auto">
+              <span class="label">${this._localize("label.tooltip_decimals_global")}</span>
+              <input type="number" class="styled-input" style="width: 80px;" min="0" max="5" .value=${this._config.tooltip_decimals !== undefined ? this._config.tooltip_decimals : ''} @input=${(ev) => this._updateConfig('tooltip_decimals', ev.target.value)} placeholder=${this._localize("label.auto")}>
             </div>
 
             <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
               <div>
-                <span class="label" style="font-size: 11px;">Datumsformat Tooltip-Titel (Kurz <= 48h)</span>
+                <span class="label" style="font-size: 11px;">${this._localize("label.format_tooltip_date_short")}</span>
                 <input type="text" class="styled-input" .value=${this._config.format_tooltip_date_short || ''} @input=${(ev) => this._updateConfig('format_tooltip_date_short', ev.target.value)} placeholder="HH:mm">
               </div>
               <div>
-                <span class="label" style="font-size: 11px;">Datumsformat Tooltip-Titel (Lang > 48h)</span>
+                <span class="label" style="font-size: 11px;">${this._localize("label.format_tooltip_date_long")}</span>
                 <input type="text" class="styled-input" .value=${this._config.format_tooltip_date_long || ''} @input=${(ev) => this._updateConfig('format_tooltip_date_long', ev.target.value)} placeholder="DD.MM.YYYY HH:mm">
               </div>
             </div>
@@ -405,7 +405,7 @@ class FixedPeriodChartEditor extends LitElement {
         <details class="config-section">
           <summary><h3>${this._localize('section.colors')} (Global)</h3></summary>
           <div class="side-by-side" style="margin-top: 16px;">
-            ${this.renderColorPicker("Card Background Color", "card_bg_color")}
+            ${this.renderColorPicker(this._localize("color.card_bg_color"), "card_bg_color")}
           </div>
         </details>
 
@@ -458,20 +458,20 @@ class FixedPeriodChartEditor extends LitElement {
 
           <div class="side-by-side" style="margin-top: 16px;">
             <div style="width: 100%;">
-              <span class="label" style="font-weight: bold; margin-bottom: 4px; display: block;">Individuelle Datums-Formatierung</span>
-              <span class="label" style="font-size: 12px; opacity: 0.8; margin-bottom: 8px; display: block;">Ersetze Standard-Datumsanzeigen (z.B. DD.MM.YYYY HH:mm)</span>
+              <span class="label" style="font-weight: bold; margin-bottom: 4px; display: block;">${this._localize("label.custom_date_format")}</span>
+              <span class="label" style="font-size: 12px; opacity: 0.8; margin-bottom: 8px; display: block;">${this._localize("desc.custom_date_format")}</span>
               
               <div style="display: flex; flex-direction: column; gap: 8px;">
                 <div>
-                  <span class="label" style="font-size: 11px;">Format X-Achse (Kurzer Zeitraum <= 48h)</span>
+                  <span class="label" style="font-size: 11px;">${this._localize("label.format_axis_short")}</span>
                   <input type="text" class="styled-input" .value=${this._config.format_axis_short || ''} @input=${(ev) => this._updateConfig('format_axis_short', ev.target.value)} placeholder="HH:mm">
                 </div>
                 <div>
-                  <span class="label" style="font-size: 11px;">Format X-Achse (Langer Zeitraum > 48h)</span>
+                  <span class="label" style="font-size: 11px;">${this._localize("label.format_axis_long")}</span>
                   <input type="text" class="styled-input" .value=${this._config.format_axis_long || ''} @input=${(ev) => this._updateConfig('format_axis_long', ev.target.value)} placeholder="DD.MM. HH:mm">
                 </div>
                 <div>
-                  <span class="label" style="font-size: 11px;">Format Titel ({date_range})</span>
+                  <span class="label" style="font-size: 11px;">${this._localize("label.format_title_date")}</span>
                   <input type="text" class="styled-input" .value=${this._config.format_title_date || ''} @input=${(ev) => this._updateConfig('format_title_date', ev.target.value)} placeholder="DD.MM.YYYY">
                 </div>
               </div>
@@ -480,13 +480,13 @@ class FixedPeriodChartEditor extends LitElement {
 
           <div class="side-by-side" style="margin-top: 16px;">
             <div>
-              <span class="label">Animation Easing (Übergangseffekt)</span>
+              <span class="label">${this._localize("label.animation_easing")}</span>
               <select class="styled-select" @change=${(ev) => this._updateConfig('animation_easing', ev.target.value)}>
-                <option value="easeOutQuart" ?selected=${this._config.animation_easing === 'easeOutQuart' || !this._config.animation_easing}>Standard (easeOutQuart)</option>
-                <option value="linear" ?selected=${this._config.animation_easing === 'linear'}>Linear</option>
-                <option value="easeInOutElastic" ?selected=${this._config.animation_easing === 'easeInOutElastic'}>Elastisch (easeInOutElastic)</option>
-                <option value="easeOutBounce" ?selected=${this._config.animation_easing === 'easeOutBounce'}>Bouncend (easeOutBounce)</option>
-                <option value="easeInOutBack" ?selected=${this._config.animation_easing === 'easeInOutBack'}>Rückschwingend (easeInOutBack)</option>
+                <option value="easeOutQuart" ?selected=${this._config.animation_easing === 'easeOutQuart' || !this._config.animation_easing}>${this._localize("easing.easeOutQuart")}</option>
+                <option value="linear" ?selected=${this._config.animation_easing === 'linear'}>${this._localize("easing.linear")}</option>
+                <option value="easeInOutElastic" ?selected=${this._config.animation_easing === 'easeInOutElastic'}>${this._localize("easing.easeInOutElastic")}</option>
+                <option value="easeOutBounce" ?selected=${this._config.animation_easing === 'easeOutBounce'}>${this._localize("easing.easeOutBounce")}</option>
+                <option value="easeInOutBack" ?selected=${this._config.animation_easing === 'easeInOutBack'}>${this._localize("easing.easeInOutBack")}</option>
               </select>
             </div>
           </div>
@@ -535,11 +535,11 @@ class FixedPeriodChartEditor extends LitElement {
         <span class="label">${label}</span>
         <input type="text" id="title-input-${key}" class="styled-input" .value=${val} @input=${(ev) => this._updateConfig(key, ev.target.value)} placeholder=${placeholder}>
         <div class="template-chips" style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px;">
-          <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{start_date}')}>+ Start Datum</button>
-          <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{end_date}')}>+ End Datum</button>
-          <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{date_range}')}>+ Von/Bis Datum</button>
-          <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{start_time}')}>+ Start Zeit</button>
-          <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{end_time}')}>+ End Zeit</button>
+          <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{start_date}')}>${this._localize("btn.add_start_date")}</button>
+          <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{end_date}')}>${this._localize("btn.add_end_date")}</button>
+          <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{date_range}')}>${this._localize("btn.add_date_range")}</button>
+          <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{start_time}')}>${this._localize("btn.add_start_time")}</button>
+          <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{end_time}')}>${this._localize("btn.add_end_time")}</button>
         </div>
       </div>
     `;
@@ -600,7 +600,7 @@ class FixedPeriodChartEditor extends LitElement {
                 
                 ${ent.use_dynamic_chart_type ? html`
                   <ha-entity-picker
-                    .label=${"Diagramm-Typ Entity (z.B. input_select)"}
+                    .label=${this._localize("label.chart_type_entity_input")}
                     .hass=${this.hass}
                     .value=${ent.chart_type_entity || ''}
                     @value-changed=${(ev) => this._updateEntityConfig(index, 'chart_type_entity', ev.detail.value)}
@@ -610,7 +610,7 @@ class FixedPeriodChartEditor extends LitElement {
                   <select class="styled-select" @change=${(ev) => this._updateEntityConfig(index, 'chart_type', ev.target.value)}>
                     <option value="bar" ?selected=${chartType === 'bar'}>${this._localize("type.bar")}</option>
                     <option value="line" ?selected=${chartType === 'line'}>${this._localize("type.line")}</option>
-                    <option value="scatter" ?selected=${chartType === 'scatter'}>Punkte (Scatter)</option>
+                    <option value="scatter" ?selected=${chartType === 'scatter'}>${this._localize("type.scatter")}</option>
                   </select>
                 `}
               </div>
@@ -619,7 +619,7 @@ class FixedPeriodChartEditor extends LitElement {
             ${chartType === 'bar' || ent.use_dynamic_chart_type ? html`
               <div class="side-by-side" style="margin-top: 16px;">
                 <div style="flex: 1;">
-                  <span class="label">Balken-Modus (Min/Max Optionen)</span>
+                  <span class="label">${this._localize("label.bar_mode")}</span>
                   <select class="styled-select" @change=${(ev) => {
                     this._updateEntityConfig(index, 'bar_mode', ev.target.value);
                     if (ent.use_min_max !== undefined) {
@@ -628,9 +628,9 @@ class FixedPeriodChartEditor extends LitElement {
                       this._updateConfig('entities', newConfig);
                     }
                   }}>
-                    <option value="standard" ?selected=${!ent.bar_mode && !ent.use_min_max}>Standard (Mittelwert/Zustand)</option>
-                    <option value="floating" ?selected=${ent.bar_mode === 'floating' || ent.use_min_max}>Floating Bar (Min-Max Spanne)</option>
-                    <option value="stacked" ?selected=${ent.bar_mode === 'stacked'}>Stacked Bar (Gestapelt, Min & Max)</option>
+                    <option value="standard" ?selected=${!ent.bar_mode && !ent.use_min_max}>${this._localize("bar_mode.standard")}</option>
+                    <option value="floating" ?selected=${ent.bar_mode === 'floating' || ent.use_min_max}>${this._localize("bar_mode.floating")}</option>
+                    <option value="stacked" ?selected=${ent.bar_mode === 'stacked'}>${this._localize("bar_mode.stacked")}</option>
                   </select>
                 </div>
               </div>
@@ -638,29 +638,29 @@ class FixedPeriodChartEditor extends LitElement {
 
             <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 16px;">
               ${(chartType === 'line' || chartType === 'scatter' || (chartType === 'bar' && (!ent.bar_mode || ent.bar_mode === 'standard' && !ent.use_min_max)) || ent.use_dynamic_chart_type) ? html`
-                <span class="label" style="font-weight: bold; margin-bottom: -8px;">Standard-Farben (Linie / normaler Balken)</span>
-                ${this.renderEntityColorPicker(this._localize("color.line_bar") || "Linien- / Rahmenfarbe", "color", ent, index)}
-                ${this.renderEntityColorPicker(this._localize("color.background") || "Hintergrund- / Füllfarbe", "bg_color", ent, index)}
+                <span class="label" style="font-weight: bold; margin-bottom: -8px;">${this._localize("label.colors_standard")}</span>
+                ${this.renderEntityColorPicker(this._localize("color.line_bar") || this._localize("color.line_bar"), "color", ent, index)}
+                ${this.renderEntityColorPicker(this._localize("color.background") || this._localize("color.background"), "bg_color", ent, index)}
               ` : ''}
               
               ${(ent.bar_mode === 'stacked' || ent.bar_mode === 'floating' || ent.use_min_max || ent.use_dynamic_chart_type) ? html`
                 <div style="margin-top: 8px; border-top: 1px dashed var(--divider-color, #e0e0e0); padding-top: 12px; display: flex; flex-direction: column; gap: 16px;">
-                  <span class="label" style="font-weight: bold; margin-bottom: 0;">Farben für Min/Max-Diagramme (Max / oberer Bereich)</span>
-                  ${this.renderEntityColorPicker("Linien- / Rahmenfarbe (Max)", "color_max", ent, index)}
-                  ${this.renderEntityColorPicker("Hintergrund- / Füllfarbe (Max)", "bg_color_max", ent, index)}
+                  <span class="label" style="font-weight: bold; margin-bottom: 0;">${this._localize("label.colors_max")}</span>
+                  ${this.renderEntityColorPicker(this._localize("color.line_bar_max"), "color_max", ent, index)}
+                  ${this.renderEntityColorPicker(this._localize("color.bg_color_max"), "bg_color_max", ent, index)}
                   
-                  <span class="label" style="font-weight: bold; margin-bottom: 0; margin-top: 8px;">Farben für Min/Max-Diagramme (Min / unterer Bereich)</span>
-                  ${this.renderEntityColorPicker("Linien- / Rahmenfarbe (Min)", "color_min", ent, index)}
-                  ${this.renderEntityColorPicker("Hintergrund- / Füllfarbe (Min)", "bg_color_min", ent, index)}
+                  <span class="label" style="font-weight: bold; margin-bottom: 0; margin-top: 8px;">${this._localize("label.colors_min")}</span>
+                  ${this.renderEntityColorPicker(this._localize("color.line_bar_min"), "color_min", ent, index)}
+                  ${this.renderEntityColorPicker(this._localize("color.bg_color_min"), "bg_color_min", ent, index)}
                 </div>
               ` : ''}
             </div>
             
             <div style="margin-top: 16px; border-top: 1px dashed var(--divider-color, #e0e0e0); padding-top: 12px; display: flex; flex-direction: column; gap: 16px;">
-              <span class="label" style="font-weight: bold; margin-bottom: 0;">Y-Achsen Skalierung (für diese Entität)</span>
+              <span class="label" style="font-weight: bold; margin-bottom: 0;">${this._localize("label.y_axis_scaling")}</span>
               
               <div class="side-by-side">
-                <ha-formfield .label=${"Bei 0 beginnen (beginAtZero)"}>
+                <ha-formfield .label=${this._localize("label.begin_at_zero")}>
                   <ha-switch
                     .checked=${ent.begin_at_zero !== false}
                     @change=${(ev) => this._updateEntityConfig(index, 'begin_at_zero', ev.target.checked)}
@@ -670,28 +670,28 @@ class FixedPeriodChartEditor extends LitElement {
               
               <div class="side-by-side">
                 <div style="flex: 1;">
-                  <span class="label">Minimum (y_min)</span>
-                  <input type="number" class="styled-input" .value=${ent.y_min !== undefined ? ent.y_min : ''} @input=${(ev) => this._updateEntityConfig(index, 'y_min', ev.target.value)} placeholder="Auto">
+                  <span class="label">${this._localize("label.y_min")}</span>
+                  <input type="number" class="styled-input" .value=${ent.y_min !== undefined ? ent.y_min : ''} @input=${(ev) => this._updateEntityConfig(index, 'y_min', ev.target.value)} placeholder=${this._localize("label.auto")}>
                 </div>
                 <div style="flex: 1;">
-                  <span class="label">Maximum (y_max)</span>
-                  <input type="number" class="styled-input" .value=${ent.y_max !== undefined ? ent.y_max : ''} @input=${(ev) => this._updateEntityConfig(index, 'y_max', ev.target.value)} placeholder="Auto">
+                  <span class="label">${this._localize("label.y_max")}</span>
+                  <input type="number" class="styled-input" .value=${ent.y_max !== undefined ? ent.y_max : ''} @input=${(ev) => this._updateEntityConfig(index, 'y_max', ev.target.value)} placeholder=${this._localize("label.auto")}>
                 </div>
               </div>
             </div>
 
             <div style="margin-top: 16px; border-top: 1px dashed var(--divider-color, #e0e0e0); padding-top: 12px;">
-              <span class="label" style="font-weight: bold; margin-bottom: 4px; display: block;">Individueller Tooltip (optional)</span>
-              <span class="label" style="font-size: 12px; opacity: 0.8; margin-bottom: 8px; display: block;">Überschreibt das globale Tooltip-Format für diese Entität.</span>
+              <span class="label" style="font-weight: bold; margin-bottom: 4px; display: block;">${this._localize("label.individual_tooltip")}</span>
+              <span class="label" style="font-size: 12px; opacity: 0.8; margin-bottom: 8px; display: block;">${this._localize("desc.individual_tooltip")}</span>
               <input type="text" class="styled-input" .value=${ent.tooltip_format || ''} @input=${(ev) => this._updateEntityConfig(index, 'tooltip_format', ev.target.value)} placeholder="{name}: {value} {unit}">
               <div class="template-chips" style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px;">
-                <button class="chip-btn" @click=${(ev) => this._insertTemplateEntity(ev, index, 'tooltip_format', '{name}')}>+ Name</button>
-                <button class="chip-btn" @click=${(ev) => this._insertTemplateEntity(ev, index, 'tooltip_format', '{value}')}>+ Wert</button>
-                <button class="chip-btn" @click=${(ev) => this._insertTemplateEntity(ev, index, 'tooltip_format', '{unit}')}>+ Einheit</button>
+                <button class="chip-btn" @click=${(ev) => this._insertTemplateEntity(ev, index, 'tooltip_format', '{name}')}>${this._localize("btn.add_name")}</button>
+                <button class="chip-btn" @click=${(ev) => this._insertTemplateEntity(ev, index, 'tooltip_format', '{value}')}>${this._localize("btn.add_value")}</button>
+                <button class="chip-btn" @click=${(ev) => this._insertTemplateEntity(ev, index, 'tooltip_format', '{unit}')}>${this._localize("btn.add_unit")}</button>
               </div>
               <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
-                <span class="label">Kommastellen:</span>
-                <input type="number" class="styled-input" style="width: 80px;" min="0" max="5" .value=${ent.tooltip_decimals !== undefined ? ent.tooltip_decimals : ''} @input=${(ev) => this._updateEntityConfig(index, 'tooltip_decimals', ev.target.value)} placeholder="Auto">
+                <span class="label">${this._localize("label.tooltip_decimals")}</span>
+                <input type="number" class="styled-input" style="width: 80px;" min="0" max="5" .value=${ent.tooltip_decimals !== undefined ? ent.tooltip_decimals : ''} @input=${(ev) => this._updateEntityConfig(index, 'tooltip_decimals', ev.target.value)} placeholder=${this._localize("label.auto")}>
               </div>
             </div>
 
@@ -740,11 +740,11 @@ class FixedPeriodChartEditor extends LitElement {
               </div>
               <div class="side-by-side" style="margin-top: 16px;">
                 <div>
-                  <span class="label">Linienstil (Line Style)</span>
+                  <span class="label">${this._localize("label.line_style")}</span>
                   <select class="styled-select" @change=${(ev) => this._updateEntityConfig(index, 'line_style', ev.target.value)}>
-                    <option value="solid" ?selected=${!ent.line_style || ent.line_style === 'solid'}>Durchgezogen (Solid)</option>
-                    <option value="dashed" ?selected=${ent.line_style === 'dashed'}>Gestrichelt (Dashed)</option>
-                    <option value="dotted" ?selected=${ent.line_style === 'dotted'}>Gepunktet (Dotted)</option>
+                    <option value="solid" ?selected=${!ent.line_style || ent.line_style === 'solid'}>${this._localize("line_style.solid")}</option>
+                    <option value="dashed" ?selected=${ent.line_style === 'dashed'}>${this._localize("line_style.dashed")}</option>
+                    <option value="dotted" ?selected=${ent.line_style === 'dotted'}>${this._localize("line_style.dotted")}</option>
                   </select>
                 </div>
               </div>
@@ -827,7 +827,7 @@ class FixedPeriodChartEditor extends LitElement {
                        const b = parseInt(ev.target.value.slice(5, 7), 16);
                        this._updateEntityConfig(index, key, `rgba(${r}, ${g}, ${b}, ${parsed.opacity})`);
                      }}>
-              <span class="label" style="margin: 0;">Transparenz:</span>
+              <span class="label" style="margin: 0;">${this._localize("label.transparency")}</span>
               <input type="range" min="0" max="1" step="0.01" .value=${parsed.opacity} style="flex: 1; min-width: 60px;"
                      @input=${(ev) => {
                        const r = parseInt(parsed.hex.slice(1, 3), 16);
@@ -882,7 +882,7 @@ class FixedPeriodChartEditor extends LitElement {
                        const b = parseInt(ev.target.value.slice(5, 7), 16);
                        this._updateConfig(key, `rgba(${r}, ${g}, ${b}, ${parsed.opacity})`);
                      }}>
-              <span class="label" style="margin: 0;">Transparenz:</span>
+              <span class="label" style="margin: 0;">${this._localize("label.transparency")}</span>
               <input type="range" min="0" max="1" step="0.01" .value=${parsed.opacity} style="flex: 1; min-width: 60px;"
                      @input=${(ev) => {
                        const r = parseInt(parsed.hex.slice(1, 3), 16);
