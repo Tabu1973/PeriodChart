@@ -2,7 +2,7 @@
 
 A custom Lovelace card for Home Assistant that displays historical data (states/attributes) over a fixed, customizable time period using Chart.js.
 
-![Beta Version](https://img.shields.io/badge/version-0.0.5b-orange.svg)
+![Beta Version](https://img.shields.io/badge/version-0.0.6b-orange.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 ## Features
@@ -18,6 +18,7 @@ A custom Lovelace card for Home Assistant that displays historical data (states/
   - Custom colors and transparency (opacity) with visual color picker.
   - Configurable animations (Linear, Ease Out, Bounce, Elastic).
   - Hide/Show X/Y Axes, Grid Lines, Legend, and Tooltips.
+  - **Customizable Y-Axis:** Adjust scaling per entity (toggle `beginAtZero`, set custom `y_min` and `y_max`).
 - **Dynamic Entities:** Use Home Assistant helpers (e.g. `input_text`, `input_number`) to dynamically change colors and line widths from your dashboard without editing the card configuration.
 
 ## Installation
@@ -38,8 +39,10 @@ A custom Lovelace card for Home Assistant that displays historical data (states/
 
 Once installed, you can add the card via the visual Lovelace editor by searching for **Fixed Period Chart**.
 
-You can use the variable {date_range} in the title (e.g., Pool Temperatur {date_range}) to dynamically display the currently selected start and end dates.\n\nThe Visual Editor is split into 5 intuitive sections:
-1. **Entities & Period:** Add your sensors, define their names, chart types (Bar/Line/Scatter), colors, and line widths. Choose the time period (Day, Week, Month, Year, Custom).
+You can use the variable {date_range} in the title (e.g., Pool Temperatur {date_range}) to dynamically display the currently selected start and end dates.
+
+The Visual Editor is split into 5 intuitive sections:
+1. **Entities & Period:** Add your sensors, define their names, chart types (Bar/Line/Scatter), colors, and line widths. Choose the time period (Day, Week, Month, Year, Custom). Configure Y-Axis scaling per entity.
 2. **Time & Resolution:** Define how granular the data should be (e.g., group by hour or day) and which function to use (average, min, max, sum).
 3. **Appearance:** Set global colors (like the card background).
 4. **Display & Axes:** Toggle visibility of the legend, tooltips, axes, grid lines, and choose your animation easing effect.
@@ -74,8 +77,9 @@ If you want to let users change the resolution dynamically (e.g. from daily to m
   <img src="images/detailed-line.png" width="45%" alt="Detailed Line Chart">
   <img src="images/horizontal-bar.png" width="45%" alt="Horizontal Bar Chart">
 </div>
-<div>
+<div style="display: flex; gap: 10px; margin-top: 10px;">
   <img src="images/clean-line.png" width="45%" alt="Clean Line Chart">
+  <img src="images/y_axis_scaling.png" width="45%" alt="Y-Axis Scaling Customization">
 </div>
 
 ## Development Workflow

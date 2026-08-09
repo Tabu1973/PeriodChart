@@ -2,8 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.0.5b] - 2026-08-08
+## [0.0.6b] - 2026-08-09
 
+### Added
+- **Y-Axis Configuration:** Added the ability to configure the Y-axis scaling per entity directly from the visual editor. You can now toggle `beginAtZero` to allow the chart to zoom in on smaller fluctuations (like air pressure) and set fixed `y_min` and `y_max` values.
+
+## [0.0.5b] - 2026-08-08
 ### Added
 - **Dynamic Chart Type Support:** Added `use_dynamic_chart_type` and `chart_type_entity` options. You can now control the chart type (e.g., switch between Line, Bar, Stacked Bar, Min/Max Bar) dynamically directly from your dashboard using an `input_select` entity without opening the editor.
 - **Min/Max (Floating) and Stacked Bars:** Enhanced support for floating bars (`floating_bar`) and stacked bars (`stacked_bar`) for displaying range data (like minimum and maximum temperatures).

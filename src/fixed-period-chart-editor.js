@@ -656,6 +656,30 @@ class FixedPeriodChartEditor extends LitElement {
               ` : ''}
             </div>
             
+            <div style="margin-top: 16px; border-top: 1px dashed var(--divider-color, #e0e0e0); padding-top: 12px; display: flex; flex-direction: column; gap: 16px;">
+              <span class="label" style="font-weight: bold; margin-bottom: 0;">Y-Achsen Skalierung (für diese Entität)</span>
+              
+              <div class="side-by-side">
+                <ha-formfield .label=${"Bei 0 beginnen (beginAtZero)"}>
+                  <ha-switch
+                    .checked=${ent.begin_at_zero !== false}
+                    @change=${(ev) => this._updateEntityConfig(index, 'begin_at_zero', ev.target.checked)}
+                  ></ha-switch>
+                </ha-formfield>
+              </div>
+              
+              <div class="side-by-side">
+                <div style="flex: 1;">
+                  <span class="label">Minimum (y_min)</span>
+                  <input type="number" class="styled-input" .value=${ent.y_min !== undefined ? ent.y_min : ''} @input=${(ev) => this._updateEntityConfig(index, 'y_min', ev.target.value)} placeholder="Auto">
+                </div>
+                <div style="flex: 1;">
+                  <span class="label">Maximum (y_max)</span>
+                  <input type="number" class="styled-input" .value=${ent.y_max !== undefined ? ent.y_max : ''} @input=${(ev) => this._updateEntityConfig(index, 'y_max', ev.target.value)} placeholder="Auto">
+                </div>
+              </div>
+            </div>
+
             <div style="margin-top: 16px; border-top: 1px dashed var(--divider-color, #e0e0e0); padding-top: 12px;">
               <span class="label" style="font-weight: bold; margin-bottom: 4px; display: block;">Individueller Tooltip (optional)</span>
               <span class="label" style="font-size: 12px; opacity: 0.8; margin-bottom: 8px; display: block;">Überschreibt das globale Tooltip-Format für diese Entität.</span>

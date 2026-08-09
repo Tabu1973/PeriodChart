@@ -505,6 +505,10 @@ class FixedPeriodChart extends LitElement {
     };
     let chartScales = this.config.horizontal ? { x: valueScale, y: categoryScale } : { x: categoryScale, y: valueScale };
 
+    const beginAtZero = !entities.some(e => e.begin_at_zero === false);
+    const yMin = entities.find(e => e.y_min !== undefined && e.y_min !== '')?.y_min;
+    const yMax = entities.find(e => e.y_max !== undefined && e.y_max !== '')?.y_max;
+
     this.chart = new Chart(canvas, {
       type: datasets.length > 0 ? datasets[0].type : 'bar',
       data: {
@@ -526,7 +530,9 @@ class FixedPeriodChart extends LitElement {
         color: this.hass.themes.darkMode ? '#fff' : '#666',
         scales: {
           y: {
-            beginAtZero: true,
+            beginAtZero: beginAtZero,
+            ...(yMin !== undefined && yMin !== '' ? { min: Number(yMin) } : {}),
+            ...(yMax !== undefined && yMax !== '' ? { max: Number(yMax) } : {}),
             display: this.config.show_axis_y !== false,
             grid: {
               display: this.config.show_grid_y !== false,
