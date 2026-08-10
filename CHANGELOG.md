@@ -1,9 +1,11 @@
-## 0.0.7b
-- Designverbesserung des visuellen Editors (und native Drag & Drop Unterstützung)
-
 # Changelog
 
 All notable changes to this project will be documented in this file.
+
+## [0.0.7b] - 2026-08-10
+
+### Changed
+- **Visual Editor:** Significant design improvements and polish for the visual editor, including a new native drag & drop implementation for entity sorting.
 
 ## [0.0.6b] - 2026-08-09
 
