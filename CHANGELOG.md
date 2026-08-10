@@ -1,3 +1,6 @@
+## 0.0.7b
+- Designverbesserung des visuellen Editors (und native Drag & Drop Unterstützung)
+
 # Changelog
 
 All notable changes to this project will be documented in this file.

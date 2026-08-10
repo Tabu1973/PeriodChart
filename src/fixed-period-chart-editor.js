@@ -188,22 +188,108 @@ class FixedPeriodChartEditor extends LitElement {
     }
   }
 
-  _moveEntity(index, dir) {
-    const newEntities = [...this._entities];
-    const target = index + dir;
-    if (target < 0 || target >= newEntities.length) return;
+  _dragStart(ev, index) {
+    this._draggedIndex = index;
+    this._targetIndex = index;
+    ev.dataTransfer.effectAllowed = 'move';
     
-    const temp = newEntities[index];
-    newEntities[index] = newEntities[target];
-    newEntities[target] = temp;
+    const draggedEl = ev.currentTarget;
+    const rect = draggedEl.getBoundingClientRect();
+    
+    const headerEl = draggedEl.querySelector('.entity-header');
+    if (headerEl && ev.dataTransfer.setDragImage) {
+      const x = ev.clientX - rect.left;
+      const y = ev.clientY - rect.top;
+      ev.dataTransfer.setDragImage(headerEl, x, y);
+    }
+    
+    this._placeholder = document.createElement('div');
+    this._placeholder.className = 'drag-placeholder';
+    this._placeholder.style.height = rect.height + 'px';
+    this._placeholder.style.border = '2px dashed var(--primary-color)';
+    this._placeholder.style.borderRadius = '4px';
+    this._placeholder.style.marginBottom = '8px';
+    this._placeholder.style.backgroundColor = 'rgba(var(--rgb-primary-text-color), 0.05)';
+    this._placeholder.style.boxSizing = 'border-box';
+    this._placeholder.style.pointerEvents = 'none';
 
-    if (this._expandedEntity === index) {
-      this._expandedEntity = target;
-    } else if (this._expandedEntity === target) {
-      this._expandedEntity = index;
+    setTimeout(() => {
+      draggedEl.style.display = 'none';
+      if (draggedEl.parentNode) {
+        draggedEl.parentNode.insertBefore(this._placeholder, draggedEl.nextSibling);
+      }
+    }, 50);
+
+    if (this.shadowRoot) {
+      const container = this.shadowRoot.querySelector('.entities-config');
+      if (container) container.classList.add('is-dragging');
+    }
+  }
+
+  _dragOver(ev, dropIndex) {
+    ev.preventDefault();
+    ev.dataTransfer.dropEffect = 'move';
+    
+    if (this._draggedIndex === null || !this._placeholder) return;
+    
+    const target = ev.currentTarget;
+    const rect = target.getBoundingClientRect();
+    const mid = rect.top + rect.height / 2;
+    
+    if (ev.clientY < mid) {
+      target.parentNode.insertBefore(this._placeholder, target);
+      this._targetIndex = dropIndex;
+    } else {
+      target.parentNode.insertBefore(this._placeholder, target.nextSibling);
+      this._targetIndex = dropIndex + 1;
+    }
+  }
+
+  _dragEnd(ev) {
+    if (ev && ev.currentTarget) {
+      ev.currentTarget.style.display = '';
+    }
+    this._draggedIndex = null;
+    this._targetIndex = null;
+    if (this._placeholder && this._placeholder.parentNode) {
+      this._placeholder.parentNode.removeChild(this._placeholder);
+    }
+    this._placeholder = null;
+
+    if (this.shadowRoot) {
+      const container = this.shadowRoot.querySelector('.entities-config');
+      if (container) container.classList.remove('is-dragging');
+    }
+  }
+
+  _drop(ev) {
+    ev.preventDefault();
+    
+    if (this._draggedIndex === null || this._targetIndex === null) {
+      this._dragEnd(ev);
+      return;
+    }
+    
+    let newEntities = [...this._entities];
+    const draggedItem = newEntities.splice(this._draggedIndex, 1)[0];
+    
+    let finalIndex = this._targetIndex;
+    if (this._draggedIndex < this._targetIndex) {
+       finalIndex--;
+    }
+    
+    newEntities.splice(finalIndex, 0, draggedItem);
+    
+    if (this._expandedEntity === this._draggedIndex) {
+        this._expandedEntity = finalIndex;
+    } else if (this._expandedEntity > this._draggedIndex && this._expandedEntity <= finalIndex) {
+        this._expandedEntity--;
+    } else if (this._expandedEntity < this._draggedIndex && this._expandedEntity >= finalIndex) {
+        this._expandedEntity++;
     }
 
     this._updateConfig('entities', newEntities);
+    this._dragEnd(ev);
   }
 
   _toggleEntity(index) {
@@ -245,7 +331,9 @@ class FixedPeriodChartEditor extends LitElement {
         
         <div style="margin-bottom: 24px; background: var(--secondary-background-color); padding: 16px; border-radius: 8px; border: 1px solid var(--divider-color);">
           <h3 style="margin-top: 0; margin-bottom: 16px;">${this._localize("label.entities_header")}</h3>
-          ${this._entities.map((ent, index) => this._renderEntity(ent, index))}
+          <div class="entities-list entities-config" @dragover=${(e) => e.preventDefault()} @drop=${this._drop}>
+            ${this._entities.map((ent, index) => this._renderEntity(ent, index))}
+          </div>
           <button class="add-entity-btn" style="margin-top: 8px;" @click=${this._addEntity}>${this._localize("btn.add_entity")}</button>
         </div>
 
@@ -551,37 +639,34 @@ class FixedPeriodChartEditor extends LitElement {
     const useDynamicLineWidth = !!ent.use_dynamic_line_width;
 
     return html`
-      <div class="entity-row">
-        <div class="entity-header">
+      <details class="entity-row" ?open=${isExpanded}
+        draggable="true"
+        @dragstart=${(ev) => this._dragStart(ev, index)}
+        @dragover=${(ev) => this._dragOver(ev, index)}
+        @dragend=${this._dragEnd}
+      >
+        <summary class="entity-header" style="cursor: pointer; font-weight: bold; justify-content: space-between;" @click=${(ev) => {
+          ev.preventDefault();
+          this._toggleEntity(index);
+        }}>
+          <div class="handle" style="cursor: move; padding: 4px; margin-right: 8px; color: var(--secondary-text-color);" @click=${(ev) => ev.stopPropagation()}>
+            <ha-icon icon="mdi:drag"></ha-icon>
+          </div>
+          <span style="flex: 1; padding: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${ent.legend_label || ent.entity || `${this._localize("label.entity")} ${index + 1}`}</span>
+          <div style="display: flex; gap: 4px; flex-shrink: 0;" @click=${(ev) => ev.stopPropagation()}>
+            <button class="icon-btn remove-btn" @click=${(ev) => { ev.preventDefault(); this._removeEntity(index); }} title="${this._localize('btn.delete') || 'Entität löschen'}">
+              <ha-icon icon="mdi:delete"></ha-icon>
+            </button>
+          </div>
+        </summary>
+        <div class="entity-content">
           <ha-entity-picker
             .hass=${this.hass}
             .value=${ent.entity}
             @value-changed=${(ev) => this._updateEntityConfig(index, 'entity', ev.detail.value)}
             allow-custom-entity
-            style="flex: 1;"
+            style="margin-bottom: 16px;"
           ></ha-entity-picker>
-          
-          ${index > 0 ? html`
-            <button class="icon-btn" @click=${() => this._moveEntity(index, -1)} title="Nach oben">
-              ↑
-            </button>
-          ` : html`<div style="width: 30px;"></div>`}
-          
-          ${index < this._entities.length - 1 ? html`
-            <button class="icon-btn" @click=${() => this._moveEntity(index, 1)} title="Nach unten">
-              ↓
-            </button>
-          ` : html`<div style="width: 30px;"></div>`}
-
-          <button class="icon-btn" @click=${() => this._toggleEntity(index)}>
-            ${isExpanded ? '▲' : '▼'}
-          </button>
-          <button class="icon-btn remove-btn" @click=${() => this._removeEntity(index)}>
-            ✕
-          </button>
-        </div>
-        ${isExpanded ? html`
-          <div class="entity-content">
             <div class="side-by-side" style="margin-top: 8px;">
               <div>
                 <span class="label">${this._localize("label.legend_label")}</span>
@@ -750,8 +835,7 @@ class FixedPeriodChartEditor extends LitElement {
               </div>
             ` : ''}
           </div>
-        ` : ''}
-      </div>
+      </details>
     `;
   }
 
@@ -988,23 +1072,20 @@ class FixedPeriodChartEditor extends LitElement {
         border-top: 1px solid var(--divider-color, #e0e0e0);
       }
       .icon-btn {
-        background: none;
-        border: none;
         cursor: pointer;
-        font-size: 14px;
-        color: var(--secondary-text-color);
-        padding: 4px;
-        border-radius: 50%;
+        background: var(--primary-color, #03a9f4);
+        color: var(--text-primary-color, white);
+        border: none;
+        padding: 6px 10px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       .icon-btn:hover {
-        background: rgba(var(--rgb-primary-text-color), 0.05);
+        opacity: 0.8;
       }
-      .remove-btn {
-        color: var(--error-color, #f44336);
-      }
-      .remove-btn:hover {
-        background: rgba(244, 67, 54, 0.1);
-      }
+      /* remove-btn now inherits from icon-btn to be blue like dynamic-bar-card */
       .chip-btn {
         background: var(--secondary-background-color, #e5e5e5);
         border: 1px solid var(--divider-color, #e0e0e0);
@@ -1036,7 +1117,8 @@ class FixedPeriodChartEditor extends LitElement {
         border: 1px solid var(--divider-color, #e0e0e0);
         border-radius: 8px;
         padding: 16px;
-        background: var(--card-background-color, #fff);
+        background: var(--secondary-background-color);
+        margin-bottom: 24px;
       }
       details.config-section summary {
         cursor: pointer;
@@ -1128,6 +1210,13 @@ class FixedPeriodChartEditor extends LitElement {
       }
       .styled-select:hover, .styled-input:hover {
         background-color: rgba(var(--rgb-primary-text-color), 0.04);
+      }
+      .entity-row[open] .entity-header {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+      .entities-config.is-dragging .entity-row * {
+        pointer-events: none;
       }
     `;
   }
