@@ -97,6 +97,8 @@ const translations = {
     "btn.add_start_date": "+ Start Date",
     "btn.add_end_date": "+ End Date",
     "btn.add_date_range": "+ Date Range",
+    "btn.add_total": "+ Total ({total})",
+    "label.show_total": "Show Total Value in Header",
     "btn.add_start_time": "+ Start Time",
     "btn.add_end_time": "+ End Time",
     "label.chart_type_entity_input": "Chart Type Entity (e.g. input_select)",
@@ -125,7 +127,20 @@ const translations = {
     "label.y_min": "Minimum (y_min)",
     "label.y_max": "Maximum (y_max)",
     "label.transparency": "Transparency:",
-    "color.card_bg_color": "Card Background Color"
+    "label.calculate_delta": "Calculate Delta / Difference (e.g. daily rain gauge)",
+    "color.card_bg_color": "Card Background Color",
+    "label.tap_action": "Tap Action",
+    "action.default": "Default (More-Info)",
+    "action.more_info": "More Info",
+    "action.toggle": "Toggle",
+    "action.navigate": "Navigate to Path",
+    "action.url": "Open URL",
+    "action.perform_action": "Perform Action / Service",
+    "action.none": "None (Disabled)",
+    "label.navigation_path": "Navigation Path (e.g. /lovelace/home)",
+    "label.url_path": "URL Path (e.g. https://...)",
+    "label.perform_action_name": "Action / Service (e.g. light.toggle)",
+    "label.global_tap_action": "Global Tap Action (Title / Card)"
   },
   de: {
     "section.basic": "1. Grundeinstellungen",
@@ -225,6 +240,8 @@ const translations = {
     "btn.add_start_date": "+ Start Datum",
     "btn.add_end_date": "+ End Datum",
     "btn.add_date_range": "+ Von/Bis Datum",
+    "btn.add_total": "+ Gesamtwert ({total})",
+    "label.show_total": "Gesamtwert im Header anzeigen",
     "btn.add_start_time": "+ Start Zeit",
     "btn.add_end_time": "+ End Zeit",
     "label.chart_type_entity_input": "Diagramm-Typ Entity (z.B. input_select)",
@@ -253,7 +270,20 @@ const translations = {
     "label.y_min": "Minimum (y_min)",
     "label.y_max": "Maximum (y_max)",
     "label.transparency": "Transparenz:",
-    "color.card_bg_color": "Karten-Hintergrundfarbe"
+    "label.calculate_delta": "Delta / Differenz berechnen (z.B. täglicher Regenzähler)",
+    "color.card_bg_color": "Karten-Hintergrundfarbe",
+    "label.tap_action": "Tipp-Aktion (Klick)",
+    "action.default": "Standard (Mehr-Info)",
+    "action.more_info": "Mehr Info",
+    "action.toggle": "Umschalten",
+    "action.navigate": "Zu Pfad navigieren",
+    "action.url": "URL öffnen",
+    "action.perform_action": "Dienst / Aktion ausführen",
+    "action.none": "Keine Aktion (Deaktiviert)",
+    "label.navigation_path": "Navigationspfad (z.B. /lovelace/home)",
+    "label.url_path": "URL Pfad (z.B. https://...)",
+    "label.perform_action_name": "Aktion / Dienst (z.B. light.toggle)",
+    "label.global_tap_action": "Globale Tipp-Aktion (Titel / Karte)"
   }
 };
 

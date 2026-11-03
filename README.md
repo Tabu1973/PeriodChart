@@ -2,13 +2,14 @@
 
 A custom Lovelace card for Home Assistant that displays historical data (states/attributes) over a fixed, customizable time period using Chart.js.
 
-![Beta Version](https://img.shields.io/badge/version-0.0.6b-orange.svg)
+![Beta Version](https://img.shields.io/badge/version-0.0.8b-orange.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 ## Features
 
 - **Fixed Time Periods:** Choose between days, weeks, months, or years.
 - **Dynamic Time Navigation:** Provides forward/backward arrows to seamlessly jump between historical periods (e.g., jump from last month to this month).
+- **Interactive Tap Actions:** Click on chart bars or points to open sensor details (more-info), toggle devices, navigate views, or run actions. Global tap action also available for the card header/title.
 - **Custom Periods:** Define custom start and end dates via Home Assistant Entities (`input_datetime` or `input_select`).
 - **Visual Editor Support:** Full support for the Home Assistant UI Visual Editor. No YAML editing required (unless you want to).
 - **Multi-Entity Support:** Combine multiple sensors into a single chart.

@@ -141,10 +141,11 @@ class FixedPeriodChart extends LitElement {
 
     // Helper to evaluate dynamic chart type
     const getDynamicChartInfo = (e) => {
-      let cType = e.chart_type || 'bar';
-      let bMode = e.bar_mode || (e.use_min_max ? 'floating' : 'standard');
-      if (e.use_dynamic_chart_type && e.chart_type_entity && this.hass.states[e.chart_type_entity]) {
-        const dynType = this.hass.states[e.chart_type_entity].state;
+      let cType = e.chart_type || this.config.chart_type || 'bar';
+      let bMode = e.bar_mode || this.config.bar_mode || (e.use_min_max ? 'floating' : 'standard');
+      const chartTypeEnt = e.chart_type_entity || this.config.chart_type_entity;
+      if ((e.use_dynamic_chart_type || this.config.use_dynamic_chart_type) && chartTypeEnt && this.hass?.states[chartTypeEnt]) {
+        const dynType = this.hass.states[chartTypeEnt].state;
         if (['line', 'bar', 'scatter'].includes(dynType)) {
           cType = dynType;
           bMode = 'standard';
@@ -164,7 +165,7 @@ class FixedPeriodChart extends LitElement {
     // Floating Bars (Min/Max) machen nur bei einer Auflösung von mind. 'day' Sinn
     const hasMinMax = this._entities && this._entities.some(e => {
       const info = getDynamicChartInfo(e);
-      return info.cType === 'bar' && (info.bMode === 'floating' || info.bMode === 'stacked');
+      return info.cType === 'bar' && (info.bMode === 'floating' || (info.bMode === 'stacked' && e.use_min_max));
     });
     
     const hasStandardBar = this._entities && this._entities.some(e => {
@@ -172,13 +173,27 @@ class FixedPeriodChart extends LitElement {
       return info.cType === 'bar' && info.bMode === 'standard';
     });
     
-    if (hasMinMax && (resolution === '5minute' || resolution === 'hour' || resolution === 'auto')) {
+    if (resolution === 'auto') {
+      if (hasMinMax) {
+        resolution = 'day';
+      } else if (durationDays > 360) {
+        resolution = 'month';
+      } else if (durationDays > 31) {
+        resolution = 'day';
+      } else if (durationDays > 2) {
+        resolution = hasStandardBar ? 'day' : 'hour';
+      } else {
+        resolution = 'hour';
+      }
+    } else if (hasMinMax && (resolution === '5minute' || resolution === 'hour')) {
       resolution = 'day';
     } else if (hasStandardBar) {
-      if (durationDays > 31 && (resolution === '5minute' || resolution === 'hour' || resolution === 'auto')) {
+      if (durationDays > 360) {
+        resolution = 'month';
+      } else if (durationDays > 31 && (resolution === '5minute' || resolution === 'hour')) {
         resolution = 'day';
-      } else if (durationDays > 3 && (resolution === '5minute' || resolution === 'auto')) {
-        resolution = 'hour';
+      } else if (durationDays > 3 && resolution === '5minute') {
+        resolution = 'day';
       }
     }
 
@@ -262,6 +277,9 @@ class FixedPeriodChart extends LitElement {
       if (resolution === '5minute' && daysSinceStart > 7) {
         resolution = 'hour';
       }
+      if (resolution === 'auto' || !['5minute', 'hour', 'day', 'week', 'month'].includes(resolution)) {
+        resolution = 'hour';
+      }
 
       const response = await this.hass.callWS({
         type: 'recorder/statistics_during_period',
@@ -334,10 +352,11 @@ class FixedPeriodChart extends LitElement {
     // Evaluate if entity styles changed
     const entities = this._entities;
     const currentEntityStyles = entities.map(e => {
-      let cType = e.chart_type || 'bar';
-      let bMode = e.bar_mode || (e.use_min_max ? 'floating' : 'standard');
-      if (e.use_dynamic_chart_type && e.chart_type_entity && this.hass.states[e.chart_type_entity]) {
-        const dynType = this.hass.states[e.chart_type_entity].state;
+      let cType = e.chart_type || this.config.chart_type || 'bar';
+      let bMode = e.bar_mode || this.config.bar_mode || (e.use_min_max ? 'floating' : 'standard');
+      const chartTypeEnt = e.chart_type_entity || this.config.chart_type_entity;
+      if ((e.use_dynamic_chart_type || this.config.use_dynamic_chart_type) && chartTypeEnt && this.hass.states[chartTypeEnt]) {
+        const dynType = this.hass.states[chartTypeEnt].state;
         if (['line', 'bar', 'scatter'].includes(dynType)) {
           cType = dynType; bMode = 'standard';
         } else if (dynType === 'floating_bar') {
@@ -382,10 +401,11 @@ class FixedPeriodChart extends LitElement {
         unit = this.hass.states[ent.entity].attributes.unit_of_measurement;
       }
       
-      let cType = ent.chart_type || 'bar';
-      let bMode = ent.bar_mode || (ent.use_min_max ? 'floating' : 'standard');
-      if (ent.use_dynamic_chart_type && ent.chart_type_entity && this.hass.states[ent.chart_type_entity]) {
-        const dynType = this.hass.states[ent.chart_type_entity].state;
+      let cType = ent.chart_type || this.config.chart_type || 'bar';
+      let bMode = ent.bar_mode || this.config.bar_mode || (ent.use_min_max ? 'floating' : 'standard');
+      const chartTypeEnt = ent.chart_type_entity || this.config.chart_type_entity;
+      if ((ent.use_dynamic_chart_type || this.config.use_dynamic_chart_type) && chartTypeEnt && this.hass.states[chartTypeEnt]) {
+        const dynType = this.hass.states[chartTypeEnt].state;
         if (['line', 'bar', 'scatter'].includes(dynType)) {
           cType = dynType; bMode = 'standard';
         } else if (dynType === 'floating_bar') {
@@ -395,15 +415,19 @@ class FixedPeriodChart extends LitElement {
         }
       }
       
+      const hidePoints = ent.show_data_points === false || this.config.show_data_points === false;
+
       const baseDataset = {
+        entity_id: ent.entity,
+        entity_index: idx,
         label: ent.legend_label || ent.entity,
         unit: unit,
         tooltip_format: ent.tooltip_format,
         tooltip_decimals: ent.tooltip_decimals,
         borderWidth: line_width ? Number(line_width) : (cType === 'line' ? 2 : (cType === 'scatter' ? 0 : 1)),
         tension: ent.smoothing ? 0.4 : 0,
-        pointRadius: ent.show_data_points === false ? 0 : (cType === 'scatter' ? 4 : 3),
-        pointHoverRadius: ent.show_data_points === false ? 5 : (cType === 'scatter' ? 6 : 4),
+        pointRadius: hidePoints ? 0 : (cType === 'scatter' ? 4 : 3),
+        pointHoverRadius: hidePoints ? (cType === 'scatter' ? 6 : 4) : (cType === 'scatter' ? 6 : 4),
         showLine: cType !== 'scatter',
         borderDash: ent.line_style === 'dashed' ? [5, 5] : (ent.line_style === 'dotted' ? [2, 3] : []),
         type: cType === 'scatter' ? 'line' : (cType || 'bar'),
@@ -412,14 +436,49 @@ class FixedPeriodChart extends LitElement {
       };
 
       const rawPoints = this.chartDatasets[idx] || [];
-      const useMinMax = (cType === 'bar' && (bMode === 'floating' || bMode === 'stacked'));
+      const useMinMax = (cType === 'bar' && (bMode === 'floating' || (bMode === 'stacked' && ent.use_min_max)));
+      const calculateDelta = ent.calculate_delta || ent.stat_type === 'delta' || ent.stat_type === 'diff';
       
+      let prevVal = null;
       const rawData = rawPoints.map(point => {
         if (!point) return null;
         if (useMinMax && point.min !== undefined && point.max !== undefined) {
           return [Number(point.min), Number(point.max)];
+        } else if (calculateDelta) {
+          const curRaw = point.state !== undefined ? point.state : (point.max !== undefined ? point.max : (point.mean !== undefined ? point.mean : point.sum));
+          const numCur = (curRaw !== null && curRaw !== undefined && !isNaN(Number(curRaw))) ? Number(curRaw) : null;
+          
+          if (numCur === null) {
+            return null;
+          }
+          
+          let val;
+          if (prevVal === null) {
+            val = (point.change !== undefined && point.change !== null) ? Number(point.change) : numCur;
+          } else {
+            if (numCur >= prevVal) {
+              val = numCur - prevVal;
+            } else {
+              // Counter reset to 0 (e.g. daily reset at midnight)
+              val = numCur >= 0 ? numCur : 0;
+            }
+          }
+          prevVal = numCur;
+          return val !== null && !isNaN(val) ? Number(val) : null;
         } else {
-          let val = point.state !== undefined ? point.state : (point.mean !== undefined ? point.mean : point.sum);
+          let val;
+          const isTotalIncreasing = this.hass?.states?.[ent.entity]?.attributes?.state_class === 'total_increasing' || ent.stat_type === 'change' || ent.stat_type === 'diff';
+          if (isTotalIncreasing && point.change !== undefined && point.change !== null) {
+            val = point.change;
+          } else if (ent.stat_type === 'state') {
+            val = point.state !== undefined ? point.state : point.mean;
+          } else if (ent.stat_type === 'mean') {
+            val = point.mean !== undefined ? point.mean : point.state;
+          } else if (ent.stat_type === 'sum') {
+            val = point.sum !== undefined ? point.sum : point.change;
+          } else {
+            val = point.state !== undefined ? point.state : (point.mean !== undefined ? point.mean : point.sum);
+          }
           return val !== null ? Number(val) : null;
         }
       });
@@ -432,7 +491,7 @@ class FixedPeriodChart extends LitElement {
       const stdColor = color || 'rgba(54, 162, 235, 1)';
       const stdBgColor = bg_color || color || 'rgba(54, 162, 235, 0.5)';
 
-      if (cType === 'bar' && bMode === 'stacked') {
+      if (cType === 'bar' && bMode === 'stacked' && ent.use_min_max) {
         const dataMin = rawData.map(v => Array.isArray(v) ? [0, v[0]] : null);
         const dataMax = rawData.map(v => Array.isArray(v) ? [v[0], v[1]] : null);
         return [
@@ -454,6 +513,17 @@ class FixedPeriodChart extends LitElement {
             grouped: false
           }
         ];
+      }
+
+      if (cType === 'bar' && bMode === 'stacked') {
+        return [{
+          ...baseDataset,
+          stack: ent.stack || 'total_stack',
+          data: rawData,
+          backgroundColor: stdBgColor,
+          borderColor: stdColor,
+          fill: true
+        }];
       }
       
       return [{
@@ -508,6 +578,7 @@ class FixedPeriodChart extends LitElement {
     const beginAtZero = !entities.some(e => e.begin_at_zero === false);
     const yMin = entities.find(e => e.y_min !== undefined && e.y_min !== '')?.y_min;
     const yMax = entities.find(e => e.y_max !== undefined && e.y_max !== '')?.y_max;
+    const isAnyStacked = datasets.some(d => d.stack !== undefined);
 
     this.chart = new Chart(canvas, {
       type: datasets.length > 0 ? datasets[0].type : 'bar',
@@ -527,9 +598,28 @@ class FixedPeriodChart extends LitElement {
           duration: 400,
           easing: this.config.animation_easing || 'easeOutQuart'
         },
-        color: this.hass.themes.darkMode ? '#fff' : '#666',
+        color: this.hass.themes?.darkMode ? '#fff' : '#666',
+        onHover: (event, chartElement) => {
+          if (event && event.native && event.native.target) {
+            const hasElement = chartElement && chartElement.length > 0;
+            const hasCardTap = Boolean(this.config.tap_action && this.config.tap_action !== 'none' && this.config.tap_action?.action !== 'none');
+            event.native.target.style.cursor = (hasElement || hasCardTap) ? 'pointer' : 'default';
+          }
+        },
+        onClick: (event, elements) => {
+          if (elements && elements.length > 0) {
+            const firstElement = elements[0];
+            const dataset = this.chart.data.datasets[firstElement.datasetIndex];
+            const entityId = dataset?.entity_id;
+            const entityConfig = this._entities ? this._entities.find(e => e.entity === entityId) : null;
+            this._handleChartElementClick(entityConfig || { entity: entityId }, dataset);
+          } else {
+            this._handleCardTap();
+          }
+        },
         scales: {
           y: {
+            stacked: isAnyStacked,
             beginAtZero: beginAtZero,
             ...(yMin !== undefined && yMin !== '' ? { min: Number(yMin) } : {}),
             ...(yMax !== undefined && yMax !== '' ? { max: Number(yMax) } : {}),
@@ -544,6 +634,7 @@ class FixedPeriodChart extends LitElement {
             }
           },
           x: {
+            stacked: isAnyStacked,
             display: this.config.show_axis_x !== false,
             grid: {
               display: this.config.show_grid_x !== false,
@@ -621,6 +712,22 @@ class FixedPeriodChart extends LitElement {
                   .replace(/{name}/g, name)
                   .replace(/{value}/g, value)
                   .replace(/{unit}/g, unit);
+              },
+              footer: (tooltipItems) => {
+                if (!isAnyStacked || tooltipItems.length <= 1) return '';
+                let sum = 0;
+                let unit = '';
+                let hasVal = false;
+                tooltipItems.forEach(item => {
+                  if (typeof item.raw === 'number') {
+                    sum += item.raw;
+                    hasVal = true;
+                    if (!unit && item.dataset.unit) unit = item.dataset.unit;
+                  }
+                });
+                if (!hasVal) return '';
+                const decimals = this.config.tooltip_decimals !== undefined && this.config.tooltip_decimals !== '' ? Number(this.config.tooltip_decimals) : 2;
+                return `Gesamt: ${sum.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}${unit ? ` ${unit}` : ''}`;
               }
             }
           }
@@ -629,11 +736,109 @@ class FixedPeriodChart extends LitElement {
     });
   }
 
+  get _calculatedTotal() {
+    let totalSum = 0;
+    let hasData = false;
+    let unit = '';
+    let decimals = this.config.tooltip_decimals !== undefined && this.config.tooltip_decimals !== '' 
+      ? Number(this.config.tooltip_decimals) 
+      : 1;
+
+    const entities = this._entities;
+    const entitySummaries = [];
+    if (this.chartDatasets && this.chartDatasets.length > 0) {
+      entities.forEach((ent, idx) => {
+        let entUnit = '';
+        if (this.hass?.states?.[ent.entity]?.attributes?.unit_of_measurement) {
+          entUnit = this.hass.states[ent.entity].attributes.unit_of_measurement;
+        }
+        if (!unit && entUnit) {
+          unit = entUnit;
+        }
+        const pts = this.chartDatasets[idx] || [];
+        const calculateDelta = ent.calculate_delta || ent.stat_type === 'delta' || ent.stat_type === 'diff';
+        const isTotalIncreasing = this.hass?.states?.[ent.entity]?.attributes?.state_class === 'total_increasing' || ent.stat_type === 'change';
+
+        let prevVal = null;
+        let entSum = 0;
+        let entHasData = false;
+        pts.forEach(point => {
+          if (!point) return;
+          let val = null;
+          if (calculateDelta) {
+            const curRaw = point.state !== undefined ? point.state : (point.max !== undefined ? point.max : (point.mean !== undefined ? point.mean : point.sum));
+            const numCur = (curRaw !== null && curRaw !== undefined && !isNaN(Number(curRaw))) ? Number(curRaw) : null;
+            if (numCur !== null) {
+              if (prevVal === null) {
+                val = (point.change !== undefined && point.change !== null) ? Number(point.change) : numCur;
+              } else {
+                if (numCur >= prevVal) {
+                  val = numCur - prevVal;
+                } else {
+                  val = numCur >= 0 ? numCur : 0;
+                }
+              }
+              prevVal = numCur;
+            }
+          } else if (isTotalIncreasing && point.change !== undefined && point.change !== null) {
+            val = Number(point.change);
+          } else if (ent.stat_type === 'sum') {
+            val = Number(point.sum !== undefined ? point.sum : point.change);
+          } else if (ent.stat_type === 'state') {
+            val = Number(point.state !== undefined ? point.state : point.mean);
+          } else {
+            val = Number(point.state !== undefined ? point.state : (point.mean !== undefined ? point.mean : point.sum));
+          }
+
+          if (val !== null && !isNaN(val)) {
+            entSum += val;
+            entHasData = true;
+          }
+        });
+
+        if (entHasData) {
+          hasData = true;
+          totalSum += entSum;
+          const entDecimals = ent.tooltip_decimals !== undefined && ent.tooltip_decimals !== '' ? Number(ent.tooltip_decimals) : decimals;
+          entitySummaries.push({
+            label: ent.legend_label || ent.entity,
+            value: entSum,
+            formatted: entSum.toLocaleString(undefined, { minimumFractionDigits: entDecimals, maximumFractionDigits: entDecimals }),
+            unit: entUnit || unit
+          });
+        }
+      });
+    }
+
+    if (!hasData) return null;
+    const formattedTotal = totalSum.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    
+    let fullStr = `${formattedTotal}${unit ? ` ${unit}` : ''}`;
+    const isBreakdownOnly = this.config.sum_entities === false;
+    if (entitySummaries.length > 1) {
+      const breakdown = entitySummaries.map(s => `${s.label}: ${s.formatted}${s.unit ? ` ${s.unit}` : ''}`).join(' • ');
+      if (isBreakdownOnly) {
+        fullStr = breakdown;
+      } else {
+        fullStr = `${formattedTotal}${unit ? ` ${unit}` : ''} (${breakdown})`;
+      }
+    }
+
+    return {
+      value: totalSum,
+      formatted: formattedTotal,
+      unit: unit,
+      full: fullStr,
+      isBreakdownOnly: isBreakdownOnly && entitySummaries.length > 1,
+      entities: entitySummaries
+    };
+  }
+
   get _renderedTitle() {
     let title = this.config.title || '';
-    if (!title || !this._currentStart || !this._currentEnd) return title;
+    if (!title) return title;
     
-    if (title.includes('{date_range}')) {
+    if (this._currentStart && this._currentEnd && title.includes('{date_range}')) {
       const s = new Date(this._currentStart);
       const e = new Date(this._currentEnd);
       const formatStr = this.config.format_title_date || 'DD.MM.YYYY';
@@ -643,6 +848,21 @@ class FixedPeriodChart extends LitElement {
       
       const dateRange = (sStr === eStr) ? sStr : `${sStr} - ${eStr}`;
       title = title.replace('{date_range}', dateRange);
+    }
+
+    if (title.includes('{start_date}') && this._currentStart) {
+      const formatStr = this.config.format_title_date || 'DD.MM.YYYY';
+      title = title.replace('{start_date}', this._formatDate(new Date(this._currentStart), formatStr));
+    }
+    if (title.includes('{end_date}') && this._currentEnd) {
+      const formatStr = this.config.format_title_date || 'DD.MM.YYYY';
+      title = title.replace('{end_date}', this._formatDate(new Date(this._currentEnd), formatStr));
+    }
+
+    if (title.includes('{total}') || title.includes('{sum}') || title.includes('{gesamt}')) {
+      const tot = this._calculatedTotal;
+      const totalStr = tot ? tot.full : '';
+      title = title.replace(/{total}|{sum}|{gesamt}/g, totalStr);
     }
     
     return title;
@@ -672,15 +892,101 @@ class FixedPeriodChart extends LitElement {
     return result;
   }
 
+  _handleTitleTap(ev) {
+    if (ev) ev.stopPropagation();
+    if (!this.config.tap_action || this.config.tap_action === "none") return;
+    this._handleCardTap();
+  }
+
+  _handleCardTap() {
+    if (!this.config.tap_action || this.config.tap_action === "none") return;
+    const actionConfig = typeof this.config.tap_action === "string"
+      ? { action: this.config.tap_action }
+      : { ...this.config.tap_action };
+    if (actionConfig.action === "none") return;
+
+    const defaultEntity = this._entities?.[0]?.entity;
+    const entityId = actionConfig.entity || defaultEntity;
+
+    const event = new CustomEvent("hass-action", {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      detail: {
+        config: {
+          entity: entityId,
+          tap_action: actionConfig,
+        },
+        action: "tap",
+      },
+    });
+    this.dispatchEvent(event);
+
+    if ((!actionConfig.action || actionConfig.action === "more-info") && entityId) {
+      const moreInfo = new CustomEvent("hass-more-info", {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        detail: { entityId },
+      });
+      this.dispatchEvent(moreInfo);
+    }
+  }
+
+  _handleChartElementClick(entityConfig, dataset) {
+    let tapAction = entityConfig?.tap_action !== undefined ? entityConfig.tap_action : this.config.tap_action;
+    if (tapAction === undefined) {
+      tapAction = { action: "more-info" };
+    }
+    if (tapAction === "none" || (typeof tapAction === "object" && tapAction.action === "none")) {
+      return;
+    }
+
+    const actionConfig = typeof tapAction === "string" ? { action: tapAction } : { ...tapAction };
+    const entityId = actionConfig.entity || entityConfig?.entity || dataset?.entity_id;
+
+    const event = new CustomEvent("hass-action", {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      detail: {
+        config: {
+          entity: entityId,
+          tap_action: actionConfig,
+        },
+        action: "tap",
+      },
+    });
+    this.dispatchEvent(event);
+
+    if ((!actionConfig.action || actionConfig.action === "more-info") && entityId) {
+      const moreInfo = new CustomEvent("hass-more-info", {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        detail: { entityId },
+      });
+      this.dispatchEvent(moreInfo);
+    }
+  }
+
   render() {
     if (!this.config) return html``;
+    const hasCardTap = Boolean(this.config.tap_action && this.config.tap_action !== 'none' && this.config.tap_action?.action !== 'none');
 
     return html`
       <ha-card style=${this._currentCardBgColor ? `background: ${this._currentCardBgColor};` : ''}>
-        ${this.config.title || this.config.show_navigation ? html`
+        ${this.config.title || this.config.show_navigation || (this.config.show_total && this._calculatedTotal) ? html`
           <div class="card-header-custom">
             ${this.config.show_navigation ? html`<ha-icon-button .path=${"M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"} @click=${() => this.navigateTime(-1)}></ha-icon-button>` : ''}
-            <h1 class="card-title">${this._renderedTitle}</h1>
+            <div class="card-title-container ${hasCardTap ? 'clickable' : ''}" @click=${(ev) => this._handleTitleTap(ev)}>
+              <h1 class="card-title">${this._renderedTitle}</h1>
+              ${this.config.show_total && this._calculatedTotal ? html`
+                <div class="card-total-subtitle" style="font-size: 13px; font-weight: 500; opacity: 0.85; margin-top: 4px; text-align: center; line-height: 1.4;">
+                  ${this._calculatedTotal.isBreakdownOnly ? '' : 'Gesamt: '}${this._calculatedTotal.full}
+                </div>
+              ` : ''}
+            </div>
             ${this.config.show_navigation ? html`<ha-icon-button .path=${"M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"} @click=${() => this.navigateTime(1)}></ha-icon-button>` : ''}
           </div>
         ` : ''}
@@ -738,6 +1044,20 @@ class FixedPeriodChart extends LitElement {
         justify-content: space-between;
         align-items: center;
         padding-bottom: 12px;
+      }
+      .card-title-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+        transition: opacity 0.15s ease;
+      }
+      .card-title-container.clickable {
+        cursor: pointer;
+      }
+      .card-title-container.clickable:hover {
+        opacity: 0.8;
       }
       .card-title {
         font-size: var(--ha-card-header-font-size, 24px);

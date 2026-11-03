@@ -345,6 +345,29 @@ class FixedPeriodChartEditor extends LitElement {
               ${this._renderTitleInput(`${this._localize("label.title")} (Standard)`, 'title')}
             </div>
           </div>
+
+          <div class="side-by-side" style="margin-top: 16px;">
+            <div style="flex: 1;">
+              <span class="label">${this._localize("label.global_tap_action")}</span>
+              <select class="styled-select" @change=${(ev) => this._globalTapActionTypeChanged(ev)}>
+                <option value="none" ?selected=${!this._config.tap_action || this._config.tap_action === 'none' || this._config.tap_action?.action === 'none'}>${this._localize("action.none")}</option>
+                <option value="more-info" ?selected=${this._config.tap_action === 'more-info' || this._config.tap_action?.action === 'more-info'}>${this._localize("action.more_info")}</option>
+                <option value="navigate" ?selected=${this._config.tap_action === 'navigate' || this._config.tap_action?.action === 'navigate'}>${this._localize("action.navigate")}</option>
+                <option value="url" ?selected=${this._config.tap_action === 'url' || this._config.tap_action?.action === 'url'}>${this._localize("action.url")}</option>
+              </select>
+            </div>
+            ${(this._config.tap_action === 'navigate' || this._config.tap_action?.action === 'navigate') ? html`
+              <div style="flex: 1;">
+                <span class="label">${this._localize("label.navigation_path")}</span>
+                <input type="text" class="styled-input" placeholder="/lovelace/home" .value=${this._config.tap_action?.navigation_path || ''} @input=${(ev) => this._globalTapActionPropChanged(ev, 'navigation_path')}>
+              </div>
+            ` : (this._config.tap_action === 'url' || this._config.tap_action?.action === 'url') ? html`
+              <div style="flex: 1;">
+                <span class="label">${this._localize("label.url_path")}</span>
+                <input type="text" class="styled-input" placeholder="https://..." .value=${this._config.tap_action?.url_path || ''} @input=${(ev) => this._globalTapActionPropChanged(ev, 'url_path')}>
+              </div>
+            ` : ''}
+          </div>
           
           <div style="margin-top: 16px; border-bottom: 1px dashed var(--divider-color, #e0e0e0); padding-bottom: 12px;">
             <span class="label" style="font-weight: bold; margin-bottom: 4px; display: block;">${this._localize("label.tooltip_format")}</span>
@@ -515,6 +538,15 @@ class FixedPeriodChartEditor extends LitElement {
           </div>
           
           <div class="side-by-side" style="margin-top: 16px;">
+            <ha-formfield .label=${this._localize("label.show_total")}>
+              <ha-switch
+                .checked=${this._config.show_total === true}
+                @change=${(ev) => this._updateConfig('show_total', ev.target.checked)}
+              ></ha-switch>
+            </ha-formfield>
+          </div>
+          
+          <div class="side-by-side" style="margin-top: 16px;">
             <ha-formfield .label=${this._localize("label.show_date_picker")}>
               <ha-switch
                 .checked=${this._show_date_picker}
@@ -626,6 +658,7 @@ class FixedPeriodChartEditor extends LitElement {
           <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{start_date}')}>${this._localize("btn.add_start_date")}</button>
           <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{end_date}')}>${this._localize("btn.add_end_date")}</button>
           <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{date_range}')}>${this._localize("btn.add_date_range")}</button>
+          <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{total}')}>${this._localize("btn.add_total")}</button>
           <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{start_time}')}>${this._localize("btn.add_start_time")}</button>
           <button class="chip-btn" @click=${(ev) => this._insertTemplate(ev, key, '{end_time}')}>${this._localize("btn.add_end_time")}</button>
         </div>
@@ -720,6 +753,15 @@ class FixedPeriodChartEditor extends LitElement {
                 </div>
               </div>
             ` : ''}
+
+            <div class="side-by-side" style="margin-top: 16px;">
+              <ha-formfield .label=${this._localize("label.calculate_delta")}>
+                <ha-switch
+                  .checked=${ent.calculate_delta === true || ent.stat_type === 'delta' || ent.stat_type === 'diff'}
+                  @change=${(ev) => this._updateEntityConfig(index, 'calculate_delta', ev.target.checked)}
+                ></ha-switch>
+              </ha-formfield>
+            </div>
 
             <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 16px;">
               ${(chartType === 'line' || chartType === 'scatter' || (chartType === 'bar' && (!ent.bar_mode || ent.bar_mode === 'standard' && !ent.use_min_max)) || ent.use_dynamic_chart_type) ? html`
@@ -834,9 +876,101 @@ class FixedPeriodChartEditor extends LitElement {
                 </div>
               </div>
             ` : ''}
+
+            <div class="side-by-side" style="margin-top: 16px; border-top: 1px dashed var(--divider-color, #e0e0e0); padding-top: 12px;">
+              <div style="flex: 1;">
+                <span class="label">${this._localize("label.tap_action")}</span>
+                <select class="styled-select" @change=${(ev) => this._entityTapActionTypeChanged(ev, index)}>
+                  <option value="default" ?selected=${!ent.tap_action || ent.tap_action === 'default'}>${this._localize("action.default")}</option>
+                  <option value="more-info" ?selected=${ent.tap_action === 'more-info' || ent.tap_action?.action === 'more-info'}>${this._localize("action.more_info")}</option>
+                  <option value="toggle" ?selected=${ent.tap_action === 'toggle' || ent.tap_action?.action === 'toggle'}>${this._localize("action.toggle")}</option>
+                  <option value="navigate" ?selected=${ent.tap_action === 'navigate' || ent.tap_action?.action === 'navigate'}>${this._localize("action.navigate")}</option>
+                  <option value="url" ?selected=${ent.tap_action === 'url' || ent.tap_action?.action === 'url'}>${this._localize("action.url")}</option>
+                  <option value="perform-action" ?selected=${ent.tap_action === 'perform-action' || ent.tap_action === 'call-service' || ent.tap_action?.action === 'perform-action' || ent.tap_action?.action === 'call-service'}>${this._localize("action.perform_action")}</option>
+                  <option value="none" ?selected=${ent.tap_action === 'none' || ent.tap_action?.action === 'none'}>${this._localize("action.none")}</option>
+                </select>
+              </div>
+              ${(ent.tap_action === 'navigate' || ent.tap_action?.action === 'navigate') ? html`
+                <div style="flex: 1;">
+                  <span class="label">${this._localize("label.navigation_path")}</span>
+                  <input type="text" class="styled-input" placeholder="/lovelace/home" .value=${ent.tap_action?.navigation_path || ''} @input=${(ev) => this._entityTapActionPropChanged(ev, index, 'navigation_path')}>
+                </div>
+              ` : (ent.tap_action === 'url' || ent.tap_action?.action === 'url') ? html`
+                <div style="flex: 1;">
+                  <span class="label">${this._localize("label.url_path")}</span>
+                  <input type="text" class="styled-input" placeholder="https://..." .value=${ent.tap_action?.url_path || ''} @input=${(ev) => this._entityTapActionPropChanged(ev, index, 'url_path')}>
+                </div>
+              ` : (ent.tap_action === 'perform-action' || ent.tap_action === 'call-service' || ent.tap_action?.action === 'perform-action' || ent.tap_action?.action === 'call-service') ? html`
+                <div style="flex: 1;">
+                  <span class="label">${this._localize("label.perform_action_name")}</span>
+                  <input type="text" class="styled-input" placeholder="homeassistant.toggle" .value=${ent.tap_action?.perform_action || ent.tap_action?.service || ''} @input=${(ev) => this._entityTapActionPropChanged(ev, index, 'perform_action')}>
+                </div>
+              ` : ''}
+            </div>
           </div>
       </details>
     `;
+  }
+
+  _globalTapActionTypeChanged(ev) {
+    const val = ev.target.value;
+    let newConfig = { ...this._config };
+    if (val === 'none') {
+      newConfig.tap_action = { action: 'none' };
+    } else if (val === 'navigate') {
+      const existing = typeof newConfig.tap_action === 'object' ? newConfig.tap_action.navigation_path : '';
+      newConfig.tap_action = { action: 'navigate', navigation_path: existing || '' };
+    } else if (val === 'url') {
+      const existing = typeof newConfig.tap_action === 'object' ? newConfig.tap_action.url_path : '';
+      newConfig.tap_action = { action: 'url', url_path: existing || '' };
+    } else if (val === 'more-info') {
+      newConfig.tap_action = { action: 'more-info' };
+    }
+    this._updateConfig('tap_action', newConfig.tap_action);
+  }
+
+  _globalTapActionPropChanged(ev, prop) {
+    const val = ev.target.value;
+    let tapAction = typeof this._config.tap_action === 'object' ? { ...this._config.tap_action } : { action: this._config.tap_action || 'navigate' };
+    tapAction[prop] = val;
+    this._updateConfig('tap_action', tapAction);
+  }
+
+  _entityTapActionTypeChanged(ev, index) {
+    const val = ev.target.value;
+    const newEntities = [...this._entities];
+    const ent = { ...newEntities[index] };
+    if (val === 'default') {
+      delete ent.tap_action;
+    } else if (val === 'more-info') {
+      ent.tap_action = { action: 'more-info' };
+    } else if (val === 'toggle') {
+      ent.tap_action = { action: 'toggle' };
+    } else if (val === 'navigate') {
+      const existing = typeof ent.tap_action === 'object' ? ent.tap_action.navigation_path : '';
+      ent.tap_action = { action: 'navigate', navigation_path: existing || '' };
+    } else if (val === 'url') {
+      const existing = typeof ent.tap_action === 'object' ? ent.tap_action.url_path : '';
+      ent.tap_action = { action: 'url', url_path: existing || '' };
+    } else if (val === 'perform-action') {
+      const existing = typeof ent.tap_action === 'object' ? (ent.tap_action.perform_action || ent.tap_action.service) : '';
+      ent.tap_action = { action: 'perform-action', perform_action: existing || '' };
+    } else if (val === 'none') {
+      ent.tap_action = { action: 'none' };
+    }
+    newEntities[index] = ent;
+    this._updateConfig('entities', newEntities);
+  }
+
+  _entityTapActionPropChanged(ev, index, prop) {
+    const val = ev.target.value;
+    const newEntities = [...this._entities];
+    const ent = { ...newEntities[index] };
+    let tapAction = typeof ent.tap_action === 'object' ? { ...ent.tap_action } : { action: ent.tap_action || 'navigate' };
+    tapAction[prop] = val;
+    ent.tap_action = tapAction;
+    newEntities[index] = ent;
+    this._updateConfig('entities', newEntities);
   }
 
   _parseColor(colorStr) {

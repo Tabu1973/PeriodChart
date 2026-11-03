@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.8b] - 2026-11-03
+
+### Added
+- **Tap Actions:** Added interactive click/tap support (`tap_action`) on chart elements (bars/points) and the card title. Clicking an element defaults to opening the entity's `more-info` dialog.
+- **Entity Tap Action Settings:** Added configurable `tap_action` for each individual entity (supports `default` / `more-info`, `toggle`, `navigate`, `url`, `perform-action`, `none`).
+- **Global Tap Action Settings:** Added global `tap_action` for the card header/title with hover styling and pointer cursor.
+- **Visual Editor Controls:** Added intuitive dropdowns and dynamic input fields in the visual card editor for both global and entity tap actions.
+- **Localization:** Added full English and German translations for all tap action options and labels.
+
 ## [0.0.7b] - 2026-08-10
 
 ### Changed
